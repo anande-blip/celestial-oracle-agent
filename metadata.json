@@ -1,0 +1,8 @@
+{
+  "name": "Celestial - Tarot & Oracle Guidance",
+  "description": "A mystical image generation and editing application powered by the Gemini 2.5 Flash Image model. Features tarot spreads, oracle consultations, and soulmate destiny profiles.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}
