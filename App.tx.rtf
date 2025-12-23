@@ -1,0 +1,849 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2636
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red0\green0\blue255;\red255\green255\blue254;
+\red14\green110\blue109;\red144\green1\blue18;\red19\green118\blue70;\red15\green112\blue1;\red191\green28\blue37;
+\red107\green0\blue1;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;\cssrgb\c0\c0\c100000;\cssrgb\c100000\c100000\c99608;
+\cssrgb\c0\c50196\c50196;\cssrgb\c63922\c8235\c8235;\cssrgb\c3529\c52549\c34510;\cssrgb\c0\c50196\c0;\cssrgb\c80392\c19216\c19216;
+\cssrgb\c50196\c0\c0;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs24 \cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 import\cf0 \strokec2  \cf5 \strokec5 React\cf0 \strokec2 , \{ useState, useCallback, useRef \} \cf3 \strokec3 from\cf0 \strokec2  \cf6 \strokec6 'react'\cf0 \strokec2 ;\cb1 \
+\cf3 \cb4 \strokec3 import\cf0 \strokec2  \{ \cf5 \strokec5 GenerationState\cf0 \strokec2 , \cf5 \strokec5 AppMode\cf0 \strokec2 , \cf5 \strokec5 UploadedImage\cf0 \strokec2 , \cf5 \strokec5 TarotReading\cf0 \strokec2 , \cf5 \strokec5 TarotCard\cf0 \strokec2 , \cf5 \strokec5 DeckType\cf0 \strokec2  \} \cf3 \strokec3 from\cf0 \strokec2  \cf6 \strokec6 './types'\cf0 \strokec2 ;\cb1 \
+\cf3 \cb4 \strokec3 import\cf0 \strokec2  \{ generateTarotReading, generateInitialImage, editImage, generateSoulmateProfile, generateCardArt \} \cf3 \strokec3 from\cf0 \strokec2  \cf6 \strokec6 './services/geminiService'\cf0 \strokec2 ;\cb1 \
+\cf3 \cb4 \strokec3 import\cf0 \strokec2  \cf5 \strokec5 PromptBar\cf0 \strokec2  \cf3 \strokec3 from\cf0 \strokec2  \cf6 \strokec6 './components/PromptBar'\cf0 \strokec2 ;\cb1 \
+\cf3 \cb4 \strokec3 import\cf0 \strokec2  \cf5 \strokec5 LoadingOracle\cf0 \strokec2  \cf3 \strokec3 from\cf0 \strokec2  \cf6 \strokec6 './components/LoadingOracle'\cf0 \strokec2 ;\cb1 \
+\cf3 \cb4 \strokec3 import\cf0 \strokec2  \cf5 \strokec5 ImageDisplay\cf0 \strokec2  \cf3 \strokec3 from\cf0 \strokec2  \cf6 \strokec6 './components/ImageDisplay'\cf0 \strokec2 ;\cb1 \
+\cf3 \cb4 \strokec3 import\cf0 \strokec2  \cf5 \strokec5 LiveOracleSession\cf0 \strokec2  \cf3 \strokec3 from\cf0 \strokec2  \cf6 \strokec6 './components/LiveOracleSession'\cf0 \strokec2 ;\cb1 \
+\
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  \cf5 \strokec5 SECTIONS\cf0 \strokec2  = \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   \cf5 \strokec5 SPREADS\cf0 \strokec2 : \cf6 \strokec6 'tarot-spreads'\cf0 \strokec2 ,\cb1 \
+\cb4   \cf5 \strokec5 ORACLES\cf0 \strokec2 : \cf6 \strokec6 'live-portals'\cf0 \strokec2 ,\cb1 \
+\cb4   \cf5 \strokec5 SOULMATE\cf0 \strokec2 : \cf6 \strokec6 'star-soulmates'\cf0 \strokec2 ,\cb1 \
+\cb4   \cf5 \strokec5 VOID\cf0 \strokec2 : \cf6 \strokec6 'the-void'\cf0 \cb1 \strokec2 \
+\cb4 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  \cf5 \strokec5 SPREADS_DEFAULTS\cf0 \strokec2  = [\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   \{ id: \cf7 \strokec7 1\cf0 \strokec2 , title: \cf6 \strokec6 'The Daily Spark'\cf0 \strokec2 , \cf3 \strokec3 type\cf0 \strokec2 : \cf6 \strokec6 'One Card'\cf0 \strokec2 , count: \cf7 \strokec7 1\cf0 \strokec2 , desc: \cf6 \strokec6 'A single point of focus for your day ahead.'\cf0 \strokec2 , defaultImg: \cf6 \strokec6 'https://images.unsplash.com/photo-1590487988256-9ed24133863e?auto=format&fit=crop&q=80&w=400'\cf0 \strokec2  \},\cb1 \
+\cb4   \{ id: \cf7 \strokec7 2\cf0 \strokec2 , title: \cf6 \strokec6 'Fate\'92s Choice'\cf0 \strokec2 , \cf3 \strokec3 type\cf0 \strokec2 : \cf6 \strokec6 'Yes or No'\cf0 \strokec2 , count: \cf7 \strokec7 1\cf0 \strokec2 , desc: \cf6 \strokec6 'Clarity for a burning question in your heart.'\cf0 \strokec2 , defaultImg: \cf6 \strokec6 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&q=80&w=400'\cf0 \strokec2  \},\cb1 \
+\cb4   \{ id: \cf7 \strokec7 3\cf0 \strokec2 , title: \cf6 \strokec6 'The Ancient Path'\cf0 \strokec2 , \cf3 \strokec3 type\cf0 \strokec2 : \cf6 \strokec6 'Celtic Tarot'\cf0 \strokec2 , count: \cf7 \strokec7 10\cf0 \strokec2 , desc: \cf6 \strokec6 'A deep, ten-card journey into your soul\'92s blueprint.'\cf0 \strokec2 , defaultImg: \cf6 \strokec6 'https://images.unsplash.com/photo-1635505408453-6d042217c91a?auto=format&fit=crop&q=80&w=400'\cf0 \strokec2  \},\cb1 \
+\cb4   \{ id: \cf7 \strokec7 4\cf0 \strokec2 , title: \cf6 \strokec6 'Heart\'92s Mirror'\cf0 \strokec2 , \cf3 \strokec3 type\cf0 \strokec2 : \cf6 \strokec6 'Love Tarot'\cf0 \strokec2 , count: \cf7 \strokec7 6\cf0 \strokec2 , desc: \cf6 \strokec6 'Understand the threads connecting two souls.'\cf0 \strokec2 , defaultImg: \cf6 \strokec6 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&q=80&w=400'\cf0 \strokec2  \},\cb1 \
+\cb4   \{ id: \cf7 \strokec7 5\cf0 \strokec2 , title: \cf6 \strokec6 'Cardinal Flux'\cf0 \strokec2 , \cf3 \strokec3 type\cf0 \strokec2 : \cf6 \strokec6 '4 Cards'\cf0 \strokec2 , count: \cf7 \strokec7 4\cf0 \strokec2 , desc: \cf6 \strokec6 'Navigate the four elements of your current situation.'\cf0 \strokec2 , defaultImg: \cf6 \strokec6 'https://images.unsplash.com/photo-1549465220-1d8c9d9c6703?auto=format&fit=crop&q=80&w=400'\cf0 \strokec2  \},\cb1 \
+\cb4   \{ id: \cf7 \strokec7 6\cf0 \strokec2 , title: \cf6 \strokec6 'Chronos Gaze'\cf0 \strokec2 , \cf3 \strokec3 type\cf0 \strokec2 : \cf6 \strokec6 '3 Cards'\cf0 \strokec2 , count: \cf7 \strokec7 3\cf0 \strokec2 , desc: \cf6 \strokec6 'Past, Present, and Future alignment.'\cf0 \strokec2 , defaultImg: \cf6 \strokec6 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=400'\cf0 \strokec2  \}\cb1 \
+\cb4 ];\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  \cf5 \strokec5 ORACLE_DEFAULTS\cf0 \strokec2  = [\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   \{ name: \cf6 \strokec6 'Michael'\cf0 \strokec2 , title: \cf6 \strokec6 'The Forest Seeker'\cf0 \strokec2 , desc: \cf6 \strokec6 'Deep connection to the ancient woods and hidden paths.'\cf0 \strokec2 , defaultImg: \cf6 \strokec6 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=600'\cf0 \strokec2  \},\cb1 \
+\cb4   \{ name: \cf6 \strokec6 'Elara'\cf0 \strokec2 , title: \cf6 \strokec6 'The Lake Whisperer'\cf0 \strokec2 , desc: \cf6 \strokec6 'Reading the ripples of time through sacred waters.'\cf0 \strokec2 , defaultImg: \cf6 \strokec6 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600'\cf0 \strokec2  \},\cb1 \
+\cb4   \{ name: \cf6 \strokec6 'Josephine'\cf0 \strokec2 , title: \cf6 \strokec6 'The Greenhouse Sage'\cf0 \strokec2 , desc: \cf6 \strokec6 'Growth, patience, and the wisdom of blooming life.'\cf0 \strokec2 , defaultImg: \cf6 \strokec6 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=600'\cf0 \strokec2  \}\cb1 \
+\cb4 ];\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  \cf5 \strokec5 DECKS\cf0 \strokec2 : \cf5 \strokec5 Record\cf0 \strokec2 <\cf5 \strokec5 DeckType\cf0 \strokec2 , \{ accent: \cf3 \strokec3 string\cf0 \strokec2 , desc: \cf3 \strokec3 string\cf0 \strokec2 , cardColor: \cf3 \strokec3 string\cf0 \strokec2 , backClass: \cf3 \strokec3 string\cf0 \strokec2  \}> = \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   \cf6 \strokec6 'Rider-Waite'\cf0 \strokec2 : \{ \cb1 \
+\cb4     backClass: \cf6 \strokec6 "card-back-lux"\cf0 \strokec2 ,\cb1 \
+\cb4     accent: \cf6 \strokec6 "from-blue-900 to-indigo-950"\cf0 \strokec2 ,\cb1 \
+\cb4     cardColor: \cf6 \strokec6 "bg-[#fefce8]"\cf0 \strokec2 , \cb1 \
+\cb4     desc: \cf6 \strokec6 "The world's most famous deck, featuring the iconic art of Pamela Colman Smith."\cf0 \cb1 \strokec2 \
+\cb4   \},\cb1 \
+\cb4   \cf6 \strokec6 'Tarot de Marseille'\cf0 \strokec2 : \{ \cb1 \
+\cb4     backClass: \cf6 \strokec6 "card-back-lux"\cf0 \strokec2 ,\cb1 \
+\cb4     accent: \cf6 \strokec6 "from-red-900 to-yellow-900"\cf0 \strokec2 ,\cb1 \
+\cb4     cardColor: \cf6 \strokec6 "bg-[#fff7ed]"\cf0 \strokec2 , \cb1 \
+\cb4     desc: \cf6 \strokec6 "A beautiful ancient tradition with bold primary colors and powerful medieval woodcuts."\cf0 \cb1 \strokec2 \
+\cb4   \},\cb1 \
+\cb4   \cf6 \strokec6 'Thoth'\cf0 \strokec2 : \{ \cb1 \
+\cb4     backClass: \cf6 \strokec6 "card-back-lux"\cf0 \strokec2 ,\cb1 \
+\cb4     accent: \cf6 \strokec6 "from-purple-950 to-black"\cf0 \strokec2 ,\cb1 \
+\cb4     cardColor: \cf6 \strokec6 "bg-[#0f172a]"\cf0 \strokec2 ,\cb1 \
+\cb4     desc: \cf6 \strokec6 "Aleister Crowley's esoteric masterpiece, painted with intense geometric precision."\cf0 \cb1 \strokec2 \
+\cb4   \}\cb1 \
+\cb4 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  \cf5 \strokec5 LuxuryCardBack\cf0 \strokec2 : \cf5 \strokec5 React\cf0 \strokec2 .\cf5 \strokec5 FC\cf0 \strokec2 <\{ deckType: \cf5 \strokec5 DeckType\cf0 \strokec2  \}> = (\{ deckType \}) => \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   \cf3 \strokec3 return\cf0 \strokec2  (\cb1 \
+\cb4     <div className=\cf6 \strokec6 "absolute inset-0 card-back-lux rounded-[inherit] overflow-hidden shadow-inner border-2 border-[#d4af37]/30"\cf0 \strokec2 >\cb1 \
+\cb4       <div className=\cf6 \strokec6 "absolute inset-1 border border-[#d4af37]/50 rounded-[inherit] pointer-events-none opacity-40"\cf0 \strokec2 ></div>\cb1 \
+\cb4       \cb1 \
+\cb4       \{\cf8 \strokec8 /* Intricate Gold Filigree SVG Overlay - LUXURY REDESIGN */\cf0 \strokec2 \}\cb1 \
+\cb4       <svg className=\cf6 \strokec6 "absolute inset-0 w-full h-full p-4"\cf0 \strokec2  viewBox=\cf6 \strokec6 "0 0 100 150"\cf0 \strokec2  fill=\cf6 \strokec6 "none"\cf0 \strokec2  xmlns=\cf6 \strokec6 "http://www.w3.org/2000/svg"\cf0 \strokec2 >\cb1 \
+\cb4         <defs>\cb1 \
+\cb4           <filter id=\cf6 \strokec6 "gold-glow-back"\cf0 \strokec2  x=\cf6 \strokec6 "-20%"\cf0 \strokec2  y=\cf6 \strokec6 "-20%"\cf0 \strokec2  width=\cf6 \strokec6 "140%"\cf0 \strokec2  height=\cf6 \strokec6 "140%"\cf0 \strokec2 >\cb1 \
+\cb4             <feGaussianBlur stdDeviation=\cf6 \strokec6 "0.4"\cf0 \strokec2  result=\cf6 \strokec6 "blur"\cf0 \strokec2  />\cb1 \
+\cb4             <feComposite \cf3 \strokec3 in\cf0 \strokec2 =\cf6 \strokec6 "SourceGraphic"\cf0 \strokec2  in2=\cf6 \strokec6 "blur"\cf0 \strokec2  operator=\cf6 \strokec6 "over"\cf0 \strokec2  />\cb1 \
+\cb4           </filter>\cb1 \
+\cb4         </defs>\cb1 \
+\
+\cb4         \{\cf8 \strokec8 /* Outer Frame Lines */\cf0 \strokec2 \}\cb1 \
+\cb4         <rect x=\cf6 \strokec6 "5"\cf0 \strokec2  y=\cf6 \strokec6 "5"\cf0 \strokec2  width=\cf6 \strokec6 "90"\cf0 \strokec2  height=\cf6 \strokec6 "140"\cf0 \strokec2  rx=\cf6 \strokec6 "4"\cf0 \strokec2  stroke=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  strokeWidth=\cf6 \strokec6 "0.5"\cf0 \strokec2  opacity=\cf6 \strokec6 "0.6"\cf0 \strokec2  />\cb1 \
+\cb4         <rect x=\cf6 \strokec6 "7"\cf0 \strokec2  y=\cf6 \strokec6 "7"\cf0 \strokec2  width=\cf6 \strokec6 "86"\cf0 \strokec2  height=\cf6 \strokec6 "136"\cf0 \strokec2  rx=\cf6 \strokec6 "3"\cf0 \strokec2  stroke=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  strokeWidth=\cf6 \strokec6 "0.2"\cf0 \strokec2  opacity=\cf6 \strokec6 "0.3"\cf0 \strokec2  />\cb1 \
+\
+\cb4         \{\cf8 \strokec8 /* Corner Fleur-de-lis decorations */\cf0 \strokec2 \}\cb1 \
+\cb4         <g transform=\cf6 \strokec6 "translate(10,10) scale(0.12)"\cf0 \strokec2  fill=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  filter=\cf6 \strokec6 "url(#gold-glow-back)"\cf0 \strokec2 >\cb1 \
+\cb4            <path d=\cf6 \strokec6 "M20,0 C22,10 32,10 32,18 C32,24 25,24 25,32 L15,32 C15,24 8,24 8,18 C8,10 18,10 20,0 Z"\cf0 \strokec2  />\cb1 \
+\cb4            <path d=\cf6 \strokec6 "M20,32 C24,32 30,32 30,35 C30,38 24,42 20,48 C16,42 10,38 10,35 C10,32 16,32 20,32 Z"\cf0 \strokec2  opacity=\cf6 \strokec6 "0.8"\cf0 \strokec2  />\cb1 \
+\cb4         </g>\cb1 \
+\cb4         <g transform=\cf6 \strokec6 "translate(90,10) scale(0.12) rotate(90)"\cf0 \strokec2  fill=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  filter=\cf6 \strokec6 "url(#gold-glow-back)"\cf0 \strokec2 >\cb1 \
+\cb4            <path d=\cf6 \strokec6 "M20,0 C22,10 32,10 32,18 C32,24 25,24 25,32 L15,32 C15,24 8,24 8,18 C8,10 18,10 20,0 Z"\cf0 \strokec2  />\cb1 \
+\cb4            <path d=\cf6 \strokec6 "M20,32 C24,32 30,32 30,35 C30,38 24,42 20,48 C16,42 10,38 10,35 C10,32 16,32 20,32 Z"\cf0 \strokec2  opacity=\cf6 \strokec6 "0.8"\cf0 \strokec2  />\cb1 \
+\cb4         </g>\cb1 \
+\cb4         <g transform=\cf6 \strokec6 "translate(10,140) scale(0.12) rotate(-90)"\cf0 \strokec2  fill=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  filter=\cf6 \strokec6 "url(#gold-glow-back)"\cf0 \strokec2 >\cb1 \
+\cb4            <path d=\cf6 \strokec6 "M20,0 C22,10 32,10 32,18 C32,24 25,24 25,32 L15,32 C15,24 8,24 8,18 C8,10 18,10 20,0 Z"\cf0 \strokec2  />\cb1 \
+\cb4            <path d=\cf6 \strokec6 "M20,32 C24,32 30,32 30,35 C30,38 24,42 20,48 C16,42 10,38 10,35 C10,32 16,32 20,32 Z"\cf0 \strokec2  opacity=\cf6 \strokec6 "0.8"\cf0 \strokec2  />\cb1 \
+\cb4         </g>\cb1 \
+\cb4         <g transform=\cf6 \strokec6 "translate(90,140) scale(0.12) rotate(180)"\cf0 \strokec2  fill=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  filter=\cf6 \strokec6 "url(#gold-glow-back)"\cf0 \strokec2 >\cb1 \
+\cb4            <path d=\cf6 \strokec6 "M20,0 C22,10 32,10 32,18 C32,24 25,24 25,32 L15,32 C15,24 8,24 8,18 C8,10 18,10 20,0 Z"\cf0 \strokec2  />\cb1 \
+\cb4            <path d=\cf6 \strokec6 "M20,32 C24,32 30,32 30,35 C30,38 24,42 20,48 C16,42 10,38 10,35 C10,32 16,32 20,32 Z"\cf0 \strokec2  opacity=\cf6 \strokec6 "0.8"\cf0 \strokec2  />\cb1 \
+\cb4         </g>\cb1 \
+\
+\cb4         \{\cf8 \strokec8 /* Central Medallion Group */\cf0 \strokec2 \}\cb1 \
+\cb4         <g transform=\cf6 \strokec6 "translate(50,75)"\cf0 \strokec2 >\cb1 \
+\cb4           \{\cf8 \strokec8 /* Compass/Sun Background Circles */\cf0 \strokec2 \}\cb1 \
+\cb4           <circle r=\cf6 \strokec6 "34"\cf0 \strokec2  stroke=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  strokeWidth=\cf6 \strokec6 "0.1"\cf0 \strokec2  opacity=\cf6 \strokec6 "0.2"\cf0 \strokec2  />\cb1 \
+\cb4           <circle r=\cf6 \strokec6 "30"\cf0 \strokec2  stroke=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  strokeWidth=\cf6 \strokec6 "0.8"\cf0 \strokec2  opacity=\cf6 \strokec6 "0.5"\cf0 \strokec2  />\cb1 \
+\cb4           \cb1 \
+\cb4           \{\cf8 \strokec8 /* Circular Knot Inner Border (Celtic style) */\cf0 \strokec2 \}\cb1 \
+\cb4           <circle r=\cf6 \strokec6 "26"\cf0 \strokec2  stroke=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  strokeWidth=\cf6 \strokec6 "1.2"\cf0 \strokec2  strokeDasharray=\cf6 \strokec6 "3,1"\cf0 \strokec2  opacity=\cf6 \strokec6 "0.4"\cf0 \strokec2  />\cb1 \
+\
+\cb4           \{\cf8 \strokec8 /* Main Sunburst Rays (Compass points) */\cf0 \strokec2 \}\cb1 \
+\cb4           \{[\cf7 \strokec7 0\cf0 \strokec2 , \cf7 \strokec7 45\cf0 \strokec2 , \cf7 \strokec7 90\cf0 \strokec2 , \cf7 \strokec7 135\cf0 \strokec2 , \cf7 \strokec7 180\cf0 \strokec2 , \cf7 \strokec7 225\cf0 \strokec2 , \cf7 \strokec7 270\cf0 \strokec2 , \cf7 \strokec7 315\cf0 \strokec2 ].map(deg => (\cb1 \
+\cb4             <path \cb1 \
+\cb4               key=\{\cf6 \strokec6 `ray-\cf0 \strokec2 $\{deg\}\cf6 \strokec6 `\cf0 \strokec2 \} \cb1 \
+\cb4               d=\cf6 \strokec6 "M0,-24 L3,-14 L0,-10 L-3,-14 Z"\cf0 \strokec2  \cb1 \
+\cb4               fill=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  \cb1 \
+\cb4               transform=\{\cf6 \strokec6 `rotate(\cf0 \strokec2 $\{deg\}\cf6 \strokec6 )`\cf0 \strokec2 \} \cb1 \
+\cb4               filter=\cf6 \strokec6 "url(#gold-glow-back)"\cf0 \cb1 \strokec2 \
+\cb4             />\cb1 \
+\cb4           ))\}\cb1 \
+\cb4           \{[\cf7 \strokec7 22.5\cf0 \strokec2 , \cf7 \strokec7 67.5\cf0 \strokec2 , \cf7 \strokec7 112.5\cf0 \strokec2 , \cf7 \strokec7 157.5\cf0 \strokec2 , \cf7 \strokec7 202.5\cf0 \strokec2 , \cf7 \strokec7 247.5\cf0 \strokec2 , \cf7 \strokec7 292.5\cf0 \strokec2 , \cf7 \strokec7 337.5\cf0 \strokec2 ].map(deg => (\cb1 \
+\cb4             <path \cb1 \
+\cb4               key=\{\cf6 \strokec6 `minor-ray-\cf0 \strokec2 $\{deg\}\cf6 \strokec6 `\cf0 \strokec2 \} \cb1 \
+\cb4               d=\cf6 \strokec6 "M0,-20 L2,-12 L0,-8 L-2,-12 Z"\cf0 \strokec2  \cb1 \
+\cb4               fill=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  \cb1 \
+\cb4               opacity=\cf6 \strokec6 "0.6"\cf0 \cb1 \strokec2 \
+\cb4               transform=\{\cf6 \strokec6 `rotate(\cf0 \strokec2 $\{deg\}\cf6 \strokec6 )`\cf0 \strokec2 \} \cb1 \
+\cb4             />\cb1 \
+\cb4           ))\}\cb1 \
+\
+\cb4           \{\cf8 \strokec8 /* Central Motif: Circle with Fleur-de-lis */\cf0 \strokec2 \}\cb1 \
+\cb4           <circle r=\cf6 \strokec6 "8"\cf0 \strokec2  fill=\cf6 \strokec6 "#1a2a4a"\cf0 \strokec2  stroke=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  strokeWidth=\cf6 \strokec6 "0.5"\cf0 \strokec2  />\cb1 \
+\cb4           <g transform=\cf6 \strokec6 "scale(0.2) translate(-20,-28)"\cf0 \strokec2  fill=\cf6 \strokec6 "#d4af37"\cf0 \strokec2 >\cb1 \
+\cb4             <path d=\cf6 \strokec6 "M20,0 C22,15 35,15 35,25 C35,35 25,35 25,45 L15,45 C15,35 5,35 5,25 C5,15 18,15 20,0 Z"\cf0 \strokec2  />\cb1 \
+\cb4             <path d=\cf6 \strokec6 "M20,45 C25,45 35,45 35,50 C35,55 25,60 20,70 C15,60 5,55 5,50 C5,45 15,45 20,45 Z"\cf0 \strokec2  opacity=\cf6 \strokec6 "0.8"\cf0 \strokec2  />\cb1 \
+\cb4           </g>\cb1 \
+\cb4         </g>\cb1 \
+\
+\cb4         \{\cf8 \strokec8 /* Decorative Top/Bottom Medallion Flourishes */\cf0 \strokec2 \}\cb1 \
+\cb4         <g transform=\cf6 \strokec6 "translate(50,32)"\cf0 \strokec2 >\cb1 \
+\cb4            <path d=\cf6 \strokec6 "M-20,0 C-10,-8 10,-8 20,0"\cf0 \strokec2  stroke=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  strokeWidth=\cf6 \strokec6 "0.4"\cf0 \strokec2  fill=\cf6 \strokec6 "none"\cf0 \strokec2  opacity=\cf6 \strokec6 "0.5"\cf0 \strokec2  />\cb1 \
+\cb4            <g transform=\cf6 \strokec6 "translate(0,-6) scale(0.1)"\cf0 \strokec2  fill=\cf6 \strokec6 "#d4af37"\cf0 \strokec2 >\cb1 \
+\cb4               <path d=\cf6 \strokec6 "M20,0 C25,10 40,10 40,20 Q40,30 20,40 Q0,30 0,20 C0,10 15,10 20,0Z"\cf0 \strokec2  />\cb1 \
+\cb4            </g>\cb1 \
+\cb4         </g>\cb1 \
+\cb4         <g transform=\cf6 \strokec6 "translate(50,118)"\cf0 \strokec2 >\cb1 \
+\cb4            <path d=\cf6 \strokec6 "M-20,0 C-10,8 10,8 20,0"\cf0 \strokec2  stroke=\cf6 \strokec6 "#d4af37"\cf0 \strokec2  strokeWidth=\cf6 \strokec6 "0.4"\cf0 \strokec2  fill=\cf6 \strokec6 "none"\cf0 \strokec2  opacity=\cf6 \strokec6 "0.5"\cf0 \strokec2  />\cb1 \
+\cb4            <g transform=\cf6 \strokec6 "translate(0,2) scale(0.1) rotate(180)"\cf0 \strokec2  fill=\cf6 \strokec6 "#d4af37"\cf0 \strokec2 >\cb1 \
+\cb4               <path d=\cf6 \strokec6 "M20,0 C25,10 40,10 40,20 Q40,30 20,40 Q0,30 0,20 C0,10 15,10 20,0Z"\cf0 \strokec2  />\cb1 \
+\cb4            </g>\cb1 \
+\cb4         </g>\cb1 \
+\cb4       </svg>\cb1 \
+\cb4       \cb1 \
+\cb4       \{\cf8 \strokec8 /* Subtle Texture Over Navy Base */\cf0 \strokec2 \}\cb1 \
+\cb4       <div className=\cf6 \strokec6 "absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/pinstriped-suit.png')] pointer-events-none mix-blend-overlay"\cf0 \strokec2 ></div>\cb1 \
+\cb4     </div>\cb1 \
+\cb4   );\cb1 \
+\cb4 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  \cf5 \strokec5 App\cf0 \strokec2 : \cf5 \strokec5 React\cf0 \strokec2 .\cf5 \strokec5 FC\cf0 \strokec2  = () => \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   \cf3 \strokec3 const\cf0 \strokec2  [prompt, setPrompt] = useState<\cf3 \strokec3 string\cf0 \strokec2 >(\cf6 \strokec6 ""\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [uploadedImage, setUploadedImage] = useState<\cf5 \strokec5 UploadedImage\cf0 \strokec2  | \cf3 \strokec3 null\cf0 \strokec2 >(\cf3 \strokec3 null\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [isSoulmateWizardOpen, setIsSoulmateWizardOpen] = useState(\cf3 \strokec3 false\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [activeOracleConsultation, setActiveOracleConsultation] = useState<\cf3 \strokec3 string\cf0 \strokec2  | \cf3 \strokec3 null\cf0 \strokec2 >(\cf3 \strokec3 null\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [soulmateFormData, setSoulmateFormData] = useState(\{ dob: \cf6 \strokec6 ''\cf0 \strokec2 , pob: \cf6 \strokec6 ''\cf0 \strokec2 , tob: \cf6 \strokec6 ''\cf0 \strokec2 , preference: \cf6 \strokec6 'woman'\cf0 \strokec2  \});\cb1 \
+\cb4   \cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [activeRitual, setActiveRitual] = useState<\cf3 \strokec3 typeof\cf0 \strokec2  \cf5 \strokec5 SPREADS_DEFAULTS\cf0 \strokec2 [\cf7 \strokec7 0\cf0 \strokec2 ] | \cf3 \strokec3 null\cf0 \strokec2 >(\cf3 \strokec3 null\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [selectedDeck, setSelectedDeck] = useState<\cf5 \strokec5 DeckType\cf0 \strokec2  | \cf3 \strokec3 null\cf0 \strokec2 >(\cf3 \strokec3 null\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [selectedCardIndices, setSelectedCardIndices] = useState<\cf3 \strokec3 number\cf0 \strokec2 []>([]);\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [isRitualLoading, setIsRitualLoading] = useState(\cf3 \strokec3 false\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [reading, setReading] = useState<\cf5 \strokec5 TarotReading\cf0 \strokec2  | \cf3 \strokec3 null\cf0 \strokec2 >(\cf3 \strokec3 null\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [showInterpretation, setShowInterpretation] = useState(\cf3 \strokec3 false\cf0 \strokec2 );\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [oracleImages, setOracleImages] = useState<\cf5 \strokec5 Record\cf0 \strokec2 <\cf3 \strokec3 string\cf0 \strokec2 , \cf3 \strokec3 string\cf0 \strokec2 >>(\{\cb1 \
+\cb4     \cf6 \strokec6 'Michael'\cf0 \strokec2 : \cf5 \strokec5 ORACLE_DEFAULTS\cf0 \strokec2 [\cf7 \strokec7 0\cf0 \strokec2 ].defaultImg,\cb1 \
+\cb4     \cf6 \strokec6 'Elara'\cf0 \strokec2 : \cf5 \strokec5 ORACLE_DEFAULTS\cf0 \strokec2 [\cf7 \strokec7 1\cf0 \strokec2 ].defaultImg,\cb1 \
+\cb4     \cf6 \strokec6 'Josephine'\cf0 \strokec2 : \cf5 \strokec5 ORACLE_DEFAULTS\cf0 \strokec2 [\cf7 \strokec7 2\cf0 \strokec2 ].defaultImg\cb1 \
+\cb4   \});\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [spreadImages, setSpreadImages] = useState<\cf5 \strokec5 Record\cf0 \strokec2 <\cf3 \strokec3 number\cf0 \strokec2 , \cf3 \strokec3 string\cf0 \strokec2 >>(\{\cb1 \
+\cb4     \cf7 \strokec7 1\cf0 \strokec2 : \cf5 \strokec5 SPREADS_DEFAULTS\cf0 \strokec2 [\cf7 \strokec7 0\cf0 \strokec2 ].defaultImg,\cb1 \
+\cb4     \cf7 \strokec7 2\cf0 \strokec2 : \cf5 \strokec5 SPREADS_DEFAULTS\cf0 \strokec2 [\cf7 \strokec7 1\cf0 \strokec2 ].defaultImg,\cb1 \
+\cb4     \cf7 \strokec7 3\cf0 \strokec2 : \cf5 \strokec5 SPREADS_DEFAULTS\cf0 \strokec2 [\cf7 \strokec7 2\cf0 \strokec2 ].defaultImg,\cb1 \
+\cb4     \cf7 \strokec7 4\cf0 \strokec2 : \cf5 \strokec5 SPREADS_DEFAULTS\cf0 \strokec2 [\cf7 \strokec7 3\cf0 \strokec2 ].defaultImg,\cb1 \
+\cb4     \cf7 \strokec7 5\cf0 \strokec2 : \cf5 \strokec5 SPREADS_DEFAULTS\cf0 \strokec2 [\cf7 \strokec7 4\cf0 \strokec2 ].defaultImg,\cb1 \
+\cb4     \cf7 \strokec7 6\cf0 \strokec2 : \cf5 \strokec5 SPREADS_DEFAULTS\cf0 \strokec2 [\cf7 \strokec7 5\cf0 \strokec2 ].defaultImg\cb1 \
+\cb4   \});\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [state, setState] = useState<\cf5 \strokec5 GenerationState\cf0 \strokec2 >(\{\cb1 \
+\cb4     isLoading: \cf3 \strokec3 false\cf0 \strokec2 ,\cb1 \
+\cb4     error: \cf3 \strokec3 null\cf0 \strokec2 ,\cb1 \
+\cb4     currentImage: \cf3 \strokec3 null\cf0 \strokec2 ,\cb1 \
+\cb4     soulmateProfile: \cf3 \strokec3 null\cf0 \strokec2 ,\cb1 \
+\cb4   \});\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  oracleInputRefs = useRef<\cf5 \strokec5 Record\cf0 \strokec2 <\cf3 \strokec3 string\cf0 \strokec2 , \cf5 \strokec5 HTMLInputElement\cf0 \strokec2  | \cf3 \strokec3 null\cf0 \strokec2 >>(\{\});\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  spreadInputRefs = useRef<\cf5 \strokec5 Record\cf0 \strokec2 <\cf3 \strokec3 number\cf0 \strokec2 , \cf5 \strokec5 HTMLInputElement\cf0 \strokec2  | \cf3 \strokec3 null\cf0 \strokec2 >>(\{\});\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  handleAction = useCallback(\cf3 \strokec3 async\cf0 \strokec2  () => \{\cb1 \
+\cb4     \cf3 \strokec3 if\cf0 \strokec2  (!prompt.trim()) \cf3 \strokec3 return\cf0 \strokec2 ;\cb1 \
+\cb4     setState(prev => (\{ ...prev, isLoading: \cf3 \strokec3 true\cf0 \strokec2 , error: \cf3 \strokec3 null\cf0 \strokec2  \}));\cb1 \
+\cb4     \cf3 \strokec3 try\cf0 \strokec2  \{\cb1 \
+\cb4       \cf3 \strokec3 let\cf0 \strokec2  result = uploadedImage \cb1 \
+\cb4         ? \cf3 \strokec3 await\cf0 \strokec2  editImage(uploadedImage.base64, uploadedImage.mimeType, prompt)\cb1 \
+\cb4         : state.currentImage \cb1 \
+\cb4           ? \cf3 \strokec3 await\cf0 \strokec2  editImage(state.currentImage.base64, state.currentImage.mimeType, prompt)\cb1 \
+\cb4           : \cf3 \strokec3 await\cf0 \strokec2  generateInitialImage(prompt);\cb1 \
+\cb4       setState(prev => (\{ ...prev, isLoading: \cf3 \strokec3 false\cf0 \strokec2 , error: \cf3 \strokec3 null\cf0 \strokec2 , currentImage: result \}));\cb1 \
+\cb4       setPrompt(\cf6 \strokec6 ""\cf0 \strokec2 );\cb1 \
+\cb4       setUploadedImage(\cf3 \strokec3 null\cf0 \strokec2 );\cb1 \
+\cb4     \} \cf3 \strokec3 catch\cf0 \strokec2  (err: \cf3 \strokec3 any\cf0 \strokec2 ) \{\cb1 \
+\cb4       setState(prev => (\{ ...prev, isLoading: \cf3 \strokec3 false\cf0 \strokec2 , error: err.message \}));\cb1 \
+\cb4     \}\cb1 \
+\cb4   \}, [prompt, uploadedImage, state.currentImage]);\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  handleSoulmateMatch = \cf3 \strokec3 async\cf0 \strokec2  (e: \cf5 \strokec5 React\cf0 \strokec2 .\cf5 \strokec5 FormEvent\cf0 \strokec2 ) => \{\cb1 \
+\cb4     e.preventDefault();\cb1 \
+\cb4     setState(prev => (\{ ...prev, isLoading: \cf3 \strokec3 true\cf0 \strokec2 , error: \cf3 \strokec3 null\cf0 \strokec2  \}));\cb1 \
+\cb4     setIsSoulmateWizardOpen(\cf3 \strokec3 false\cf0 \strokec2 );\cb1 \
+\cb4     \cf3 \strokec3 try\cf0 \strokec2  \{\cb1 \
+\cb4       \cf3 \strokec3 const\cf0 \strokec2  profile = \cf3 \strokec3 await\cf0 \strokec2  generateSoulmateProfile(soulmateFormData);\cb1 \
+\cb4       setState(prev => (\{ ...prev, isLoading: \cf3 \strokec3 false\cf0 \strokec2 , soulmateProfile: profile \}));\cb1 \
+\cb4       window.scrollTo(\{ top: \cf7 \strokec7 0\cf0 \strokec2 , behavior: \cf6 \strokec6 'smooth'\cf0 \strokec2  \});\cb1 \
+\cb4     \} \cf3 \strokec3 catch\cf0 \strokec2  (err: \cf3 \strokec3 any\cf0 \strokec2 ) \{\cb1 \
+\cb4       setState(prev => (\{ ...prev, isLoading: \cf3 \strokec3 false\cf0 \strokec2 , error: err.message \}));\cb1 \
+\cb4     \}\cb1 \
+\cb4   \};\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  startRitual = (spread: \cf3 \strokec3 typeof\cf0 \strokec2  \cf5 \strokec5 SPREADS_DEFAULTS\cf0 \strokec2 [\cf7 \strokec7 0\cf0 \strokec2 ]) => \{\cb1 \
+\cb4     setActiveRitual(spread);\cb1 \
+\cb4     setSelectedDeck(\cf3 \strokec3 null\cf0 \strokec2 );\cb1 \
+\cb4     setSelectedCardIndices([]);\cb1 \
+\cb4     setReading(\cf3 \strokec3 null\cf0 \strokec2 );\cb1 \
+\cb4     setShowInterpretation(\cf3 \strokec3 false\cf0 \strokec2 );\cb1 \
+\cb4     window.scrollTo(\{ top: \cf7 \strokec7 0\cf0 \strokec2 , behavior: \cf6 \strokec6 'smooth'\cf0 \strokec2  \});\cb1 \
+\cb4   \};\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  selectDeck = (deck: \cf5 \strokec5 DeckType\cf0 \strokec2 ) => \{\cb1 \
+\cb4     setSelectedDeck(deck);\cb1 \
+\cb4   \};\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  selectCard = (index: \cf3 \strokec3 number\cf0 \strokec2 ) => \{\cb1 \
+\cb4     \cf3 \strokec3 if\cf0 \strokec2  (!activeRitual || !selectedDeck || isRitualLoading || reading) \cf3 \strokec3 return\cf0 \strokec2 ;\cb1 \
+\cb4     \cf3 \strokec3 if\cf0 \strokec2  (selectedCardIndices.includes(index)) \cf3 \strokec3 return\cf0 \strokec2 ;\cb1 \
+\cb4     \cb1 \
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  nextSelected = [...selectedCardIndices, index];\cb1 \
+\cb4     setSelectedCardIndices(nextSelected);\cb1 \
+\
+\cb4     \cf3 \strokec3 if\cf0 \strokec2  (nextSelected.length === activeRitual.count) \{\cb1 \
+\cb4       initiateInterpretation();\cb1 \
+\cb4     \}\cb1 \
+\cb4   \};\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  initiateInterpretation = \cf3 \strokec3 async\cf0 \strokec2  () => \{\cb1 \
+\cb4     \cf3 \strokec3 if\cf0 \strokec2  (!activeRitual || !selectedDeck) \cf3 \strokec3 return\cf0 \strokec2 ;\cb1 \
+\cb4     setIsRitualLoading(\cf3 \strokec3 true\cf0 \strokec2 );\cb1 \
+\cb4     \cf3 \strokec3 try\cf0 \strokec2  \{\cb1 \
+\cb4       \cf3 \strokec3 const\cf0 \strokec2  result = \cf3 \strokec3 await\cf0 \strokec2  generateTarotReading(activeRitual.\cf3 \strokec3 type\cf0 \strokec2 , activeRitual.count, selectedDeck);\cb1 \
+\cb4       setReading(result);\cb1 \
+\cb4       setIsRitualLoading(\cf3 \strokec3 false\cf0 \strokec2 );\cb1 \
+\cb4     \} \cf3 \strokec3 catch\cf0 \strokec2  (err: \cf3 \strokec3 any\cf0 \strokec2 ) \{\cb1 \
+\cb4       setIsRitualLoading(\cf3 \strokec3 false\cf0 \strokec2 );\cb1 \
+\cb4       setState(prev => (\{ ...prev, error: err.message \}));\cb1 \
+\cb4     \}\cb1 \
+\cb4   \};\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  revealCard = \cf3 \strokec3 async\cf0 \strokec2  (index: \cf3 \strokec3 number\cf0 \strokec2 ) => \{\cb1 \
+\cb4     \cf3 \strokec3 if\cf0 \strokec2  (!reading || reading.cards[index].isRevealed || reading.cards[index].isGeneratingImage) \cf3 \strokec3 return\cf0 \strokec2 ;\cb1 \
+\cb4     \cb1 \
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  updatingReading = \{ ...reading \};\cb1 \
+\cb4     updatingReading.cards = [...updatingReading.cards];\cb1 \
+\cb4     updatingReading.cards[index] = \{ ...updatingReading.cards[index], isGeneratingImage: \cf3 \strokec3 true\cf0 \strokec2  \};\cb1 \
+\cb4     setReading(updatingReading);\cb1 \
+\
+\cb4     \cf3 \strokec3 try\cf0 \strokec2  \{\cb1 \
+\cb4       \cf3 \strokec3 const\cf0 \strokec2  base64Art = \cf3 \strokec3 await\cf0 \strokec2  generateCardArt(reading.cards[index].name, reading.deckType);\cb1 \
+\cb4       \cb1 \
+\cb4       \cf3 \strokec3 const\cf0 \strokec2  finalReading = \{ ...reading \};\cb1 \
+\cb4       finalReading.cards = [...finalReading.cards];\cb1 \
+\cb4       finalReading.cards[index] = \{\cb1 \
+\cb4         ...finalReading.cards[index],\cb1 \
+\cb4         base64Image: base64Art,\cb1 \
+\cb4         isRevealed: \cf3 \strokec3 true\cf0 \strokec2 ,\cb1 \
+\cb4         isGeneratingImage: \cf3 \strokec3 false\cf0 \cb1 \strokec2 \
+\cb4       \};\cb1 \
+\cb4       setReading(finalReading);\cb1 \
+\
+\cb4       \cf3 \strokec3 if\cf0 \strokec2  (finalReading.cards.every(c => c.isRevealed)) \{\cb1 \
+\cb4         setTimeout(() => \{\cb1 \
+\cb4           setShowInterpretation(\cf3 \strokec3 true\cf0 \strokec2 );\cb1 \
+\cb4         \}, \cf7 \strokec7 1500\cf0 \strokec2 );\cb1 \
+\cb4       \}\cb1 \
+\cb4     \} \cf3 \strokec3 catch\cf0 \strokec2  (err: \cf3 \strokec3 any\cf0 \strokec2 ) \{\cb1 \
+\cb4       \cf3 \strokec3 const\cf0 \strokec2  failedReading = \{ ...reading \};\cb1 \
+\cb4       failedReading.cards = [...failedReading.cards];\cb1 \
+\cb4       failedReading.cards[index] = \{ ...failedReading.cards[index], isGeneratingImage: \cf3 \strokec3 false\cf0 \strokec2  \};\cb1 \
+\cb4       setReading(failedReading);\cb1 \
+\cb4       setState(prev => (\{ ...prev, error: \cf6 \strokec6 "The spirits failed to paint the arcane. Try again."\cf0 \strokec2  \}));\cb1 \
+\cb4     \}\cb1 \
+\cb4   \};\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  handleOracleImageUpload = (name: \cf3 \strokec3 string\cf0 \strokec2 , file: \cf5 \strokec5 File\cf0 \strokec2 ) => \{\cb1 \
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  reader = \cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 FileReader\cf0 \strokec2 ();\cb1 \
+\cb4     reader.onloadend = () => \{\cb1 \
+\cb4       setOracleImages(prev => (\{ ...prev, [name]: reader.result \cf3 \strokec3 as\cf0 \strokec2  \cf3 \strokec3 string\cf0 \strokec2  \}));\cb1 \
+\cb4     \};\cb1 \
+\cb4     reader.readAsDataURL(file);\cb1 \
+\cb4   \};\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  handleSpreadImageUpload = (id: \cf3 \strokec3 number\cf0 \strokec2 , file: \cf5 \strokec5 File\cf0 \strokec2 ) => \{\cb1 \
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  reader = \cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 FileReader\cf0 \strokec2 ();\cb1 \
+\cb4     reader.onloadend = () => \{\cb1 \
+\cb4       setSpreadImages(prev => (\{ ...prev, [id]: reader.result \cf3 \strokec3 as\cf0 \strokec2  \cf3 \strokec3 string\cf0 \strokec2  \}));\cb1 \
+\cb4     \};\cb1 \
+\cb4     reader.readAsDataURL(file);\cb1 \
+\cb4   \};\cb1 \
+\
+\cb4   \cf3 \strokec3 return\cf0 \strokec2  (\cb1 \
+\cb4     <div className=\cf6 \strokec6 "relative z-10 min-h-screen"\cf0 \strokec2 >\cb1 \
+\cb4       <nav className=\cf6 \strokec6 "sticky top-0 z-50 py-6 px-8 flex justify-between items-center backdrop-blur-md border-b border-white/5"\cf0 \strokec2 >\cb1 \
+\cb4         <div className=\cf6 \strokec6 "flex items-center gap-3"\cf0 \strokec2 >\cb1 \
+\cb4           <div className=\cf6 \strokec6 "w-10 h-10 rounded-full bg-gradient-to-tr from-[#d4af37] to-amber-200 flex items-center justify-center text-midnight font-bold shadow-[0_0_20px_rgba(212,175,55,0.4)]"\cf0 \strokec2 >\cf5 \strokec5 C\cf0 \strokec2 </div>\cb1 \
+\cb4           <span className=\cf6 \strokec6 "font-serif text-2xl tracking-widest gold-text uppercase"\cf0 \strokec2 >\cf5 \strokec5 Celestial\cf0 \strokec2 </span>\cb1 \
+\cb4         </div>\cb1 \
+\cb4         <div className=\cf6 \strokec6 "hidden md:flex gap-8 text-sm uppercase tracking-widest font-light"\cf0 \strokec2 >\cb1 \
+\cb4           <a href=\{\cf6 \strokec6 `#\cf0 \strokec2 $\{\cf5 \strokec5 SECTIONS\cf0 \strokec2 .\cf5 \strokec5 SPREADS\cf0 \strokec2 \}\cf6 \strokec6 `\cf0 \strokec2 \} className=\cf6 \strokec6 "hover:text-[#d4af37] transition-colors"\cf0 \strokec2 >\cf5 \strokec5 Spreads\cf0 \strokec2 </a>\cb1 \
+\cb4           <a href=\{\cf6 \strokec6 `#\cf0 \strokec2 $\{\cf5 \strokec5 SECTIONS\cf0 \strokec2 .\cf5 \strokec5 ORACLES\cf0 \strokec2 \}\cf6 \strokec6 `\cf0 \strokec2 \} className=\cf6 \strokec6 "hover:text-[#d4af37] transition-colors"\cf0 \strokec2 >\cf5 \strokec5 Oracles\cf0 \strokec2 </a>\cb1 \
+\cb4           <a href=\{\cf6 \strokec6 `#\cf0 \strokec2 $\{\cf5 \strokec5 SECTIONS\cf0 \strokec2 .\cf5 \strokec5 SOULMATE\cf0 \strokec2 \}\cf6 \strokec6 `\cf0 \strokec2 \} className=\cf6 \strokec6 "hover:text-[#d4af37] transition-colors"\cf0 \strokec2 >\cf5 \strokec5 Soulmates\cf0 \strokec2 </a>\cb1 \
+\cb4           <a href=\{\cf6 \strokec6 `#\cf0 \strokec2 $\{\cf5 \strokec5 SECTIONS\cf0 \strokec2 .\cf5 \strokec5 VOID\cf0 \strokec2 \}\cf6 \strokec6 `\cf0 \strokec2 \} className=\cf6 \strokec6 "hover:text-[#d4af37] transition-colors"\cf0 \strokec2 >\cf5 \strokec5 The\cf0 \strokec2  \cf5 \strokec5 Void\cf0 \strokec2 </a>\cb1 \
+\cb4         </div>\cb1 \
+\cb4       </nav>\cb1 \
+\
+\cb4       <header className=\cf6 \strokec6 "pt-20 pb-12 px-4 flex flex-col items-center min-h-[600px]"\cf0 \strokec2 >\cb1 \
+\cb4         \{activeRitual ? (\cb1 \
+\cb4           <div className=\cf6 \strokec6 "w-full max-w-7xl animate-fade-in text-center min-h-[800px] flex flex-col ritual-table rounded-[4rem] border-4 border-[#d4af37]/40 p-8 md:p-16 mb-20 shadow-[0_60px_100px_rgba(0,0,0,0.9)] relative"\cf0 \strokec2 >\cb1 \
+\cb4              <div className=\cf6 \strokec6 "velvet-fold"\cf0 \strokec2 ></div>\cb1 \
+\cb4              \cb1 \
+\cb4              <div className=\cf6 \strokec6 "absolute top-8 left-8 opacity-40 pointer-events-none hidden lg:flex flex-col items-center"\cf0 \strokec2 >\cb1 \
+\cb4                 <span className=\cf6 \strokec6 "text-5xl text-[#d4af37]"\cf0 \strokec2 >\cf9 \strokec9 \uc0\u10087 \cf0 \strokec2 </span>\cb1 \
+\cb4                 <div className=\cf6 \strokec6 "h-64 w-px bg-gradient-to-b from-[#d4af37] to-transparent mt-4"\cf0 \strokec2 ></div>\cb1 \
+\cb4              </div>\cb1 \
+\cb4              <div className=\cf6 \strokec6 "absolute top-8 right-8 opacity-40 pointer-events-none hidden lg:flex flex-col items-center"\cf0 \strokec2 >\cb1 \
+\cb4                 <span className=\cf6 \strokec6 "text-5xl text-[#d4af37]"\cf0 \strokec2 >\cf9 \strokec9 \uc0\u10087 \cf0 \strokec2 </span>\cb1 \
+\cb4                 <div className=\cf6 \strokec6 "h-64 w-px bg-gradient-to-b from-[#d4af37] to-transparent mt-4"\cf0 \strokec2 ></div>\cb1 \
+\cb4              </div>\cb1 \
+\
+\cb4              <div className=\cf6 \strokec6 "mb-12 flex justify-between items-center px-4 md:px-10 relative z-10"\cf0 \strokec2 >\cb1 \
+\cb4                <button onClick=\{() => \{ setActiveRitual(\cf3 \strokec3 null\cf0 \strokec2 ); setSelectedDeck(\cf3 \strokec3 null\cf0 \strokec2 ); \}\} className=\cf6 \strokec6 "text-slate-100 text-[10px] md:text-xs uppercase tracking-[0.4em] hover:text-[#d4af37] transition-all flex items-center gap-2 group font-black"\cf0 \strokec2 >\cb1 \
+\cb4                  <span className=\cf6 \strokec6 "group-hover:-translate-x-1 transition-transform"\cf0 \strokec2 >\cf9 \strokec9 \uc0\u8592 \cf0 \strokec2 </span> \cf5 \strokec5 Temple\cf0 \cb1 \strokec2 \
+\cb4                </button>\cb1 \
+\cb4                <h2 className=\cf6 \strokec6 "text-3xl md:text-6xl font-serif gold-text italic tracking-wider drop-shadow-[0_10px_10px_rgba(0,0,0,0.8)] px-4"\cf0 \strokec2 >\cb1 \
+\cb4                  \{activeRitual.title\}\cb1 \
+\cb4                </h2>\cb1 \
+\cb4                <div className=\cf6 \strokec6 "flex items-center gap-6"\cf0 \strokec2 >\cb1 \
+\cb4                  \{selectedDeck && (\cb1 \
+\cb4                     <div className=\cf6 \strokec6 "hidden sm:flex flex-col items-end group"\cf0 \strokec2 >\cb1 \
+\cb4                        <span className=\cf6 \strokec6 "text-[9px] text-slate-300 uppercase tracking-widest font-black opacity-60"\cf0 \strokec2 >\cf5 \strokec5 Inner\cf0 \strokec2  \cf5 \strokec5 Eye\cf0 \strokec2 </span>\cb1 \
+\cb4                        <div className=\cf6 \strokec6 "crystal-orb scale-[0.5] -mr-8 -mt-8 animate-float group-hover:scale-[0.6] transition-transform"\cf0 \strokec2 >\cb1 \
+\cb4                           <div className=\cf6 \strokec6 "orb-mist"\cf0 \strokec2 ></div>\cb1 \
+\cb4                        </div>\cb1 \
+\cb4                     </div>\cb1 \
+\cb4                  )\}\cb1 \
+\cb4                </div>\cb1 \
+\cb4              </div>\cb1 \
+\
+\cb4              \{!selectedDeck ? (\cb1 \
+\cb4                <div className=\cf6 \strokec6 "grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16 max-w-6xl mx-auto mt-10 md:mt-20 animate-fade-in-up px-4 md:px-12 pb-20 relative z-10"\cf0 \strokec2 >\cb1 \
+\cb4                  \{(\cf5 \strokec5 Object\cf0 \strokec2 .keys(\cf5 \strokec5 DECKS\cf0 \strokec2 ) \cf3 \strokec3 as\cf0 \strokec2  \cf5 \strokec5 DeckType\cf0 \strokec2 []).map((deckName) => (\cb1 \
+\cb4                    <div \cb1 \
+\cb4                     key=\{deckName\} \cb1 \
+\cb4                     onClick=\{() => selectDeck(deckName)\}\cb1 \
+\cb4                     className=\cf6 \strokec6 "glass-card group p-8 md:p-12 rounded-[3.5rem] md:rounded-[5rem] cursor-pointer border-2 border-[#d4af37]/20 hover:border-[#d4af37] transition-all duration-700 overflow-hidden relative flex flex-col items-center shadow-[0_40px_100px_rgba(0,0,0,0.6)]"\cf0 \cb1 \strokec2 \
+\cb4                    >\cb1 \
+\cb4                      <div className=\{\cf6 \strokec6 `absolute inset-0 bg-gradient-to-b \cf0 \strokec2 $\{\cf5 \strokec5 DECKS\cf0 \strokec2 [deckName].accent\}\cf6 \strokec6  opacity-10 group-hover:opacity-50 transition-opacity`\cf0 \strokec2 \}></div>\cb1 \
+\cb4                      <div className=\cf6 \strokec6 "aspect-[2/3] w-full max-w-[240px] mx-auto rounded-[2rem] md:rounded-[3rem] overflow-hidden border-4 border-[#d4af37]/40 mb-8 md:mb-12 shadow-[0_30px_60px_rgba(0,0,0,0.8)] relative z-10 preserve-3d"\cf0 \strokec2 >\cb1 \
+\cb4                         <\cf5 \strokec5 LuxuryCardBack\cf0 \strokec2  deckType=\{deckName\} />\cb1 \
+\cb4                      </div>\cb1 \
+\cb4                      <h3 className=\cf6 \strokec6 "text-3xl md:text-4xl font-serif gold-text mb-4 relative z-10 italic"\cf0 \strokec2 >\{deckName\}</h3>\cb1 \
+\cb4                      <p className=\cf6 \strokec6 "text-xs md:text-sm text-slate-100 font-light leading-relaxed relative z-10 text-center px-4 md:px-6 mb-8 md:mb-12 italic opacity-80 group-hover:opacity-100"\cf0 \strokec2 >\cb1 \
+\cb4                         \cf6 \strokec6 "\{DECKS[deckName].desc\}"\cf0 \cb1 \strokec2 \
+\cb4                      </p>\cb1 \
+\cb4                      <div className=\cf6 \strokec6 "mt-auto px-10 py-4 border-2 border-[#d4af37]/60 text-[10px] md:text-[12px] font-black uppercase tracking-[0.6em] group-hover:bg-[#d4af37] group-hover:text-midnight transition-all rounded-full relative z-10 shadow-2xl bg-midnight/60"\cf0 \strokec2 >\cf5 \strokec5 Invoke\cf0 \strokec2 </div>\cb1 \
+\cb4                    </div>\cb1 \
+\cb4                  ))\}\cb1 \
+\cb4                </div>\cb1 \
+\cb4              ) : isRitualLoading ? (\cb1 \
+\cb4                <div className=\cf6 \strokec6 "flex-1 flex flex-col items-center justify-center space-y-16 relative z-10 pb-20"\cf0 \strokec2 >\cb1 \
+\cb4                  <div className=\cf6 \strokec6 "w-40 h-40 md:w-64 md:h-64 relative"\cf0 \strokec2 >\cb1 \
+\cb4                     <div className=\cf6 \strokec6 "crystal-orb w-full h-full scale-125 md:scale-150 animate-float opacity-80"\cf0 \strokec2 >\cb1 \
+\cb4                        <div className=\cf6 \strokec6 "orb-mist"\cf0 \strokec2 ></div>\cb1 \
+\cb4                     </div>\cb1 \
+\cb4                  </div>\cb1 \
+\cb4                  <div className=\cf6 \strokec6 "space-y-4"\cf0 \strokec2 >\cb1 \
+\cb4                     <p className=\cf6 \strokec6 "text-3xl md:text-5xl font-serif gold-text animate-pulse italic tracking-[0.1em]"\cf0 \strokec2 >\cf5 \strokec5 The\cf0 \strokec2  \cf5 \strokec5 Veil\cf0 \strokec2  \cf3 \strokec3 is\cf0 \strokec2  \cf5 \strokec5 Lifting\cf0 \strokec2 ...</p>\cb1 \
+\cb4                     <p className=\cf6 \strokec6 "text-[10px] text-[#d4af37] uppercase tracking-[0.5em] font-black opacity-60"\cf0 \strokec2 >\cf5 \strokec5 The\cf0 \strokec2  spirits are aligning</p>\cb1 \
+\cb4                  </div>\cb1 \
+\cb4                </div>\cb1 \
+\cb4              ) : reading ? (\cb1 \
+\cb4                <div className=\cf6 \strokec6 "flex-1 flex flex-col space-y-16 md:space-y-32 pb-20 relative z-10 overflow-hidden"\cf0 \strokec2 >\cb1 \
+\cb4                  <div className=\{\cf6 \strokec6 `flex flex-wrap justify-center gap-8 md:gap-14 px-4 md:px-10 max-w-[110rem] mx-auto transition-opacity duration-1000 \cf0 \strokec2 $\{showInterpretation ? \cf6 \strokec6 'opacity-0 pointer-events-none'\cf0 \strokec2  : \cf6 \strokec6 'opacity-100'\cf0 \strokec2 \}\cf6 \strokec6 `\cf0 \strokec2 \}>\cb1 \
+\cb4                     \{reading.cards.map((card, idx) => (\cb1 \
+\cb4                       <div \cb1 \
+\cb4                         key=\{idx\} \cb1 \
+\cb4                         onClick=\{() => revealCard(idx)\}\cb1 \
+\cb4                         className=\{\cf6 \strokec6 `\cf0 \cb1 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+\cf6 \cb4 \strokec6                           relative w-52 h-80 md:w-72 md:h-[28rem] lg:w-80 lg:h-[32rem] rounded-[2.5rem] md:rounded-[3.5rem] cursor-pointer preserve-3d card-transition\cf0 \cb1 \strokec2 \
+\cf6 \cb4 \strokec6                           \cf0 \strokec2 $\{card.isRevealed ? \cf6 \strokec6 'rotate-y-180 scale-105 shadow-[0_0_100px_rgba(212,175,55,0.4)]'\cf0 \strokec2  : \cf6 \strokec6 'hover:scale-105 hover:-translate-y-4 shadow-[0_30px_60px_rgba(212,175,55,0.4)]'\cf0 \strokec2 \}\cb1 \
+\cf6 \cb4 \strokec6                         `\cf0 \strokec2 \}\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4                       >\cb1 \
+\cb4                         <div className=\cf6 \strokec6 "absolute inset-0 backface-hidden rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden"\cf0 \strokec2 >\cb1 \
+\cb4                            <\cf5 \strokec5 LuxuryCardBack\cf0 \strokec2  deckType=\{reading.deckType\} />\cb1 \
+\cb4                            <div className=\cf6 \strokec6 "absolute inset-0 bg-midnight/10 flex items-center justify-center rounded-[inherit] overflow-hidden"\cf0 \strokec2 >\cb1 \
+\cb4                              \{card.isGeneratingImage && (\cb1 \
+\cb4                                <div className=\cf6 \strokec6 "absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-6 z-20"\cf0 \strokec2 >\cb1 \
+\cb4                                   <div className=\cf6 \strokec6 "w-10 h-10 border-4 border-[#d4af37] border-t-transparent rounded-full animate-spin"\cf0 \strokec2 ></div>\cb1 \
+\cb4                                   <span className=\cf6 \strokec6 "text-[10px] gold-text uppercase tracking-[0.4em] font-black animate-pulse"\cf0 \strokec2 >\cf5 \strokec5 Invoking\cf0 \strokec2 </span>\cb1 \
+\cb4                                </div>\cb1 \
+\cb4                              )\}\cb1 \
+\cb4                            </div>\cb1 \
+\cb4                         </div>\cb1 \
+\cb4                         <div className=\{\cf6 \strokec6 `absolute inset-0 rotate-y-180 backface-hidden rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden \cf0 \strokec2 $\{\cf5 \strokec5 DECKS\cf0 \strokec2 [reading.deckType].cardColor\}\cf6 \strokec6  shadow-[0_0_120px_rgba(0,0,0,1)]`\cf0 \strokec2 \}>\cb1 \
+\cb4                            \{card.base64Image ? (\cb1 \
+\cb4                              <div className=\cf6 \strokec6 "w-full h-full relative group"\cf0 \strokec2 >\cb1 \
+\cb4                                 <img \cb1 \
+\cb4                                   src=\{\cf6 \strokec6 `data:image/png;base64,\cf0 \strokec2 $\{card.base64Image\}\cf6 \strokec6 `\cf0 \strokec2 \} \cb1 \
+\cb4                                   className=\cf6 \strokec6 "w-full h-full object-cover transition-transform duration-[30s] group-hover:scale-110"\cf0 \strokec2  \cb1 \
+\cb4                                   alt=\{card.name\} \cb1 \
+\cb4                                 />\cb1 \
+\cb4                                 <div className=\cf6 \strokec6 "absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/30 to-transparent p-6 md:p-10 flex flex-col items-center"\cf0 \strokec2 >\cb1 \
+\cb4                                    <h4 className=\cf6 \strokec6 "text-xl md:text-3xl font-serif font-black gold-foil uppercase tracking-[0.2em] text-center drop-shadow-[0_4px_8px_rgba(0,0,0,1)]"\cf0 \strokec2 >\cb1 \
+\cb4                                      \{card.name\}\cb1 \
+\cb4                                    </h4>\cb1 \
+\cb4                                    <span className=\cf6 \strokec6 "mt-3 text-[9px] md:text-[11px] text-white/90 uppercase tracking-[0.5em] font-black drop-shadow-lg"\cf0 \strokec2 >\{card.positionName\}</span>\cb1 \
+\cb4                                 </div>\cb1 \
+\cb4                              </div>\cb1 \
+\cb4                            ) : (\cb1 \
+\cb4                              <div className=\cf6 \strokec6 "w-full h-full flex items-center justify-center bg-slate-900"\cf0 \strokec2 >\cb1 \
+\cb4                                 <div className=\cf6 \strokec6 "text-5xl text-[#d4af37] animate-pulse"\cf0 \strokec2 >\cf9 \strokec9 \uc0\u10022 \cf0 \strokec2 </div>\cb1 \
+\cb4                              </div>\cb1 \
+\cb4                            )\}\cb1 \
+\cb4                         </div>\cb1 \
+\cb4                       </div>\cb1 \
+\cb4                     ))\}\cb1 \
+\cb4                  </div>\cb1 \
+\
+\cb4                  \{showInterpretation && (\cb1 \
+\cb4                    <div className=\cf6 \strokec6 "max-w-7xl mx-auto glass-card rounded-[4rem] md:rounded-[6rem] p-12 md:p-32 animate-fade-in-up border-4 border-[#d4af37]/40 relative overflow-hidden shadow-[0_0_150px_rgba(0,0,0,1)] bg-midnight/90"\cf0 \strokec2 >\cb1 \
+\cb4                      <div className=\{\cf6 \strokec6 `absolute inset-0 bg-gradient-to-br \cf0 \strokec2 $\{\cf5 \strokec5 DECKS\cf0 \strokec2 [reading.deckType].accent\}\cf6 \strokec6  opacity-30`\cf0 \strokec2 \}></div>\cb1 \
+\cb4                      <div className=\cf6 \strokec6 "relative z-10"\cf0 \strokec2 >\cb1 \
+\cb4                         <div className=\cf6 \strokec6 "text-center mb-16 md:mb-24 flex flex-col items-center gap-6"\cf0 \strokec2 >\cb1 \
+\cb4                            <span className=\cf6 \strokec6 "text-6xl text-[#d4af37] opacity-60"\cf0 \strokec2 >\cf9 \strokec9 \uc0\u10042 \cf0 \strokec2 </span>\cb1 \
+\cb4                            <h3 className=\cf6 \strokec6 "text-3xl md:text-5xl font-serif gold-text italic tracking-tighter"\cf0 \strokec2 >\cf5 \strokec5 Wisdom\cf0 \strokec2  \cf3 \strokec3 of\cf0 \strokec2  the \{reading.deckType\}</h3>\cb1 \
+\cb4                            <span className=\cf6 \strokec6 "text-[10px] md:text-sm uppercase tracking-[1em] text-[#d4af37] font-black border-b-2 border-[#d4af37]/40 pb-4 inline-block shadow-glow"\cf0 \strokec2 >\cf5 \strokec5 Final\cf0 \strokec2  \cf5 \strokec5 Decree\cf0 \strokec2 </span>\cb1 \
+\cb4                         </div>\cb1 \
+\cb4                         \cb1 \
+\cb4                         <div className=\cf6 \strokec6 "flex flex-wrap justify-center gap-8 md:gap-14 mb-24 md:mb-32"\cf0 \strokec2 >\cb1 \
+\cb4                            \{reading.cards.map((card, idx) => (\cb1 \
+\cb4                              <div key=\{idx\} className=\cf6 \strokec6 "w-52 h-80 md:w-72 md:h-[28rem] lg:w-80 lg:h-[32rem] rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden border-4 border-[#d4af37]/40 shadow-[0_0_100px_rgba(0,0,0,1)] hover:scale-105 transition-all duration-700 bg-black"\cf0 \strokec2 >\cb1 \
+\cb4                                 <img src=\{\cf6 \strokec6 `data:image/png;base64,\cf0 \strokec2 $\{card.base64Image\}\cf6 \strokec6 `\cf0 \strokec2 \} className=\cf6 \strokec6 "w-full h-full object-cover"\cf0 \strokec2  alt=\{card.name\} />\cb1 \
+\cb4                              </div>\cb1 \
+\cb4                            ))\}\cb1 \
+\cb4                         </div>\cb1 \
+\
+\cb4                         <div className=\cf6 \strokec6 "grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 text-left mb-20 md:mb-32"\cf0 \strokec2 >\cb1 \
+\cb4                             \{reading.cards.map((card, idx) => (\cb1 \
+\cb4                               <div key=\{idx\} className=\cf6 \strokec6 "space-y-6 p-8 md:p-14 glass-card rounded-[3rem] md:rounded-[4.5rem] border-2 border-[#d4af37]/10 hover:border-[#d4af37]/60 transition-all duration-700 group relative overflow-hidden bg-black/60 shadow-2xl"\cf0 \strokec2 >\cb1 \
+\cb4                                 <div className=\cf6 \strokec6 "absolute -top-10 -left-10 w-40 h-40 bg-[#d4af37]/10 rounded-full blur-3xl group-hover:bg-[#d4af37]/20 transition-colors"\cf0 \strokec2 ></div>\cb1 \
+\cb4                                 <div className=\cf6 \strokec6 "flex justify-between items-center mb-6 relative z-10"\cf0 \strokec2 >\cb1 \
+\cb4                                   <div className=\cf6 \strokec6 "flex flex-col"\cf0 \strokec2 >\cb1 \
+\cb4                                     <h4 className=\cf6 \strokec6 "gold-text text-sm md:text-lg uppercase tracking-[0.4em] font-black"\cf0 \strokec2 >\{card.positionName\}</h4>\cb1 \
+\cb4                                     <div className=\cf6 \strokec6 "h-0.5 w-12 bg-[#d4af37]/40 mt-1"\cf0 \strokec2 ></div>\cb1 \
+\cb4                                   </div>\cb1 \
+\cb4                                   <span className=\cf6 \strokec6 "text-white text-xs md:text-sm font-serif italic tracking-[0.2em] opacity-60"\cf0 \strokec2 >\{card.name\}</span>\cb1 \
+\cb4                                 </div>\cb1 \
+\cb4                                 <p className=\cf6 \strokec6 "text-lg md:text-xl text-slate-100 font-light leading-relaxed italic opacity-95 group-hover:opacity-100 transition-opacity relative z-10"\cf0 \strokec2 >\cb1 \
+\cb4                                   \cf6 \strokec6 "\{card.interpretation\}"\cf0 \cb1 \strokec2 \
+\cb4                                 </p>\cb1 \
+\cb4                               </div>\cb1 \
+\cb4                             ))\}\cb1 \
+\cb4                         </div>\cb1 \
+\cb4                         <div className=\cf6 \strokec6 "pt-20 md:pt-32 border-t-2 border-[#d4af37]/40 flex flex-col items-center"\cf0 \strokec2 >\cb1 \
+\cb4                             <div className=\cf6 \strokec6 "crystal-orb mb-16 animate-float scale-125 md:scale-150"\cf0 \strokec2 >\cb1 \
+\cb4                                <div className=\cf6 \strokec6 "orb-mist"\cf0 \strokec2 ></div>\cb1 \
+\cb4                             </div>\cb1 \
+\cb4                             <h3 className=\cf6 \strokec6 "text-4xl md:text-7xl font-serif gold-text mb-12 italic text-center tracking-tighter drop-shadow-2xl"\cf0 \strokec2 >\cf5 \strokec5 The\cf0 \strokec2  \cf5 \strokec5 Oracle\cf6 \strokec6 's Synthesis</h3>\cf0 \cb1 \strokec2 \
+\cb4                             <p className=\cf6 \strokec6 "text-2xl md:text-4xl text-slate-100 font-light leading-relaxed max-w-5xl mx-auto text-center italic drop-shadow-[0_15px_40px_rgba(0,0,0,1)] px-6"\cf0 \strokec2 >\cb1 \
+\cb4                               \cf6 \strokec6 "\{reading.overallInterpretation\}"\cf0 \cb1 \strokec2 \
+\cb4                             </p>\cb1 \
+\cb4                             <div className=\cf6 \strokec6 "mt-24 md:mt-36 flex justify-center items-center gap-12"\cf0 \strokec2 >\cb1 \
+\cb4                                <div className=\cf6 \strokec6 "hidden md:block w-40 lg:w-64 h-px bg-gradient-to-r from-transparent via-[#d4af37]/60 to-[#d4af37]"\cf0 \strokec2 ></div>\cb1 \
+\cb4                                <button \cb1 \
+\cb4                                 onClick=\{() => \{ setActiveRitual(\cf3 \strokec3 null\cf0 \strokec2 ); setSelectedDeck(\cf3 \strokec3 null\cf0 \strokec2 ); \}\}\cb1 \
+\cb4                                 className=\cf6 \strokec6 "px-14 md:px-24 py-5 md:py-8 bg-midnight border-2 border-[#d4af37]/60 text-[#d4af37] rounded-full text-[10px] md:text-sm font-black uppercase tracking-[0.6em] hover:bg-[#d4af37] hover:text-midnight hover:scale-110 transition-all shadow-[0_40px_80px_rgba(0,0,0,0.8)]"\cf0 \cb1 \strokec2 \
+\cb4                                >\cb1 \
+\cb4                                 \cf5 \strokec5 Close\cf0 \strokec2  the \cf5 \strokec5 Portal\cf0 \cb1 \strokec2 \
+\cb4                                </button>\cb1 \
+\cb4                                <div className=\cf6 \strokec6 "hidden md:block w-40 lg:w-64 h-px bg-gradient-to-l from-transparent via-[#d4af37]/60 to-[#d4af37]"\cf0 \strokec2 ></div>\cb1 \
+\cb4                             </div>\cb1 \
+\cb4                         </div>\cb1 \
+\cb4                      </div>\cb1 \
+\cb4                    </div>\cb1 \
+\cb4                  )\}\cb1 \
+\cb4                </div>\cb1 \
+\cb4              ) : (\cb1 \
+\cb4                <div className=\cf6 \strokec6 "flex-1 flex flex-col items-center justify-center py-24 relative z-10"\cf0 \strokec2 >\cb1 \
+\cb4                   <div className=\cf6 \strokec6 "absolute top-0 opacity-10 animate-spin-slow pointer-events-none scale-150"\cf0 \strokec2 >\cb1 \
+\cb4                      <svg width=\cf6 \strokec6 "600"\cf0 \strokec2  height=\cf6 \strokec6 "600"\cf0 \strokec2  viewBox=\cf6 \strokec6 "0 0 100 100"\cf0 \strokec2  className=\cf6 \strokec6 "text-[#d4af37]"\cf0 \strokec2 >\cb1 \
+\cb4                         <circle cx=\cf6 \strokec6 "50"\cf0 \strokec2  cy=\cf6 \strokec6 "50"\cf0 \strokec2  r=\cf6 \strokec6 "48"\cf0 \strokec2  fill=\cf6 \strokec6 "none"\cf0 \strokec2  stroke=\cf6 \strokec6 "currentColor"\cf0 \strokec2  strokeWidth=\cf6 \strokec6 "0.05"\cf0 \strokec2  strokeDasharray=\cf6 \strokec6 "1,2"\cf0 \strokec2 />\cb1 \
+\cb4                         <circle cx=\cf6 \strokec6 "50"\cf0 \strokec2  cy=\cf6 \strokec6 "50"\cf0 \strokec2  r=\cf6 \strokec6 "40"\cf0 \strokec2  fill=\cf6 \strokec6 "none"\cf0 \strokec2  stroke=\cf6 \strokec6 "currentColor"\cf0 \strokec2  strokeWidth=\cf6 \strokec6 "0.1"\cf0 \strokec2  strokeDasharray=\cf6 \strokec6 "4,8"\cf0 \strokec2 />\cb1 \
+\cb4                      </svg>\cb1 \
+\cb4                   </div>\cb1 \
+\cb4                   <p className=\cf6 \strokec6 "text-slate-100 font-serif italic text-3xl md:text-5xl mb-20 animate-pulse tracking-[0.05em] px-6"\cf0 \strokec2 >\cb1 \
+\cb4                     \cf5 \strokec5 Pick\cf0 \strokec2  your cards \cf3 \strokec3 from\cf0 \strokec2  the ether...\cb1 \
+\cb4                   </p>\cb1 \
+\cb4                   <div className=\cf6 \strokec6 "flex flex-wrap justify-center gap-6 md:gap-10 mt-10 animate-fade-in-up px-6 md:px-24 max-w-[100rem] mx-auto"\cf0 \strokec2 >\cb1 \
+\cb4                     \{\cf5 \strokec5 Array\cf0 \strokec2 .\cf3 \strokec3 from\cf0 \strokec2 (\{ length: \cf7 \strokec7 22\cf0 \strokec2  \}).map((_, i) => (\cb1 \
+\cb4                         <div \cb1 \
+\cb4                           key=\{i\} \cb1 \
+\cb4                           onClick=\{() => selectCard(i)\}\cb1 \
+\cb4                           className=\{\cf6 \strokec6 `\cf0 \cb1 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+\cf6 \cb4 \strokec6                             relative w-28 h-44 md:w-40 md:h-64 lg:w-48 lg:h-72 rounded-2xl cursor-pointer transition-all duration-700 shadow-2xl preserve-3d\cf0 \cb1 \strokec2 \
+\cf6 \cb4 \strokec6                             \cf0 \strokec2 $\{selectedCardIndices.includes(i) ? \cf6 \strokec6 '-translate-y-80 opacity-0 pointer-events-none scale-50 rotate-12'\cf0 \strokec2  : \cf6 \strokec6 'hover:-translate-y-12 hover:rotate-6 hover:shadow-[0_30px_60px_rgba(212,175,55,0.4)]'\cf0 \strokec2 \}\cb1 \
+\cf6 \cb4 \strokec6                           `\cf0 \strokec2 \}\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4                         >\cb1 \
+\cb4                           <\cf5 \strokec5 LuxuryCardBack\cf0 \strokec2  deckType=\{selectedDeck\} />\cb1 \
+\cb4                         </div>\cb1 \
+\cb4                     ))\}\cb1 \
+\cb4                   </div>\cb1 \
+\cb4                </div>\cb1 \
+\cb4              )\}\cb1 \
+\cb4           </div>\cb1 \
+\cb4         ) : state.soulmateProfile ? (\cb1 \
+\cb4           <div className=\cf6 \strokec6 "w-full max-w-5xl animate-fade-in bg-[#050b1a]/80 backdrop-blur-xl border border-[#d4af37]/30 rounded-[3rem] p-8 md:p-16 shadow-2xl relative overflow-hidden"\cf0 \strokec2 >\cb1 \
+\cb4              <div className=\cf6 \strokec6 "absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-500 via-[#d4af37] to-indigo-500"\cf0 \strokec2 ></div>\cb1 \
+\cb4              \cb1 \
+\cb4              <div className=\cf6 \strokec6 "flex flex-col lg:flex-row gap-12"\cf0 \strokec2 >\cb1 \
+\cb4                <div className=\cf6 \strokec6 "lg:w-1/3 space-y-8"\cf0 \strokec2 >\cb1 \
+\cb4                  <div className=\cf6 \strokec6 "aspect-square rounded-2xl overflow-hidden border-4 border-double border-[#d4af37]/50 shadow-2xl"\cf0 \strokec2 >\cb1 \
+\cb4                    <img src=\{\cf6 \strokec6 `data:\cf0 \strokec2 $\{state.soulmateProfile.image.mimeType\}\cf6 \strokec6 ;base64,\cf0 \strokec2 $\{state.soulmateProfile.image.base64\}\cf6 \strokec6 `\cf0 \strokec2 \} alt=\cf6 \strokec6 "Soulmate Portrait"\cf0 \strokec2  className=\cf6 \strokec6 "w-full h-full object-cover"\cf0 \strokec2  />\cb1 \
+\cb4                  </div>\cb1 \
+\cb4                  <div className=\cf6 \strokec6 "text-center p-6 glass-card rounded-2xl border-pink-500/20"\cf0 \strokec2 >\cb1 \
+\cb4                    <h3 className=\cf6 \strokec6 "text-pink-500 text-xs uppercase tracking-[0.3em] font-bold mb-2"\cf0 \strokec2 >\cf5 \strokec5 Initials\cf0 \strokec2  \cf3 \strokec3 of\cf0 \strokec2  \cf5 \strokec5 Your\cf0 \strokec2  \cf5 \strokec5 Soulmate\cf0 \strokec2 </h3>\cb1 \
+\cb4                    <p className=\cf6 \strokec6 "text-5xl font-serif gold-text"\cf0 \strokec2 >\{state.soulmateProfile.initials\}</p>\cb1 \
+\cb4                    <p className=\cf6 \strokec6 "text-xs text-slate-400 mt-4 leading-relaxed"\cf0 \strokec2 >\cf5 \strokec5 These\cf0 \strokec2  \cf3 \strokec3 unique\cf0 \strokec2  letters will appear \cf3 \strokec3 in\cf0 \strokec2  unexpected places, guiding you toward love. \cf5 \strokec5 Trust\cf0 \strokec2  the signs.</p>\cb1 \
+\cb4                  </div>\cb1 \
+\cb4                </div>\cb1 \
+\
+\cb4                <div className=\cf6 \strokec6 "lg:w-2/3 space-y-10"\cf0 \strokec2 >\cb1 \
+\cb4                  <div className=\cf6 \strokec6 "border-b border-white/10 pb-6"\cf0 \strokec2 >\cb1 \
+\cb4                     <h2 className=\cf6 \strokec6 "text-4xl font-serif gold-text mb-4 italic"\cf0 \strokec2 >\cf5 \strokec5 Your\cf0 \strokec2  \cf5 \strokec5 Destiny\cf0 \strokec2  \cf5 \strokec5 Profile\cf0 \strokec2 </h2>\cb1 \
+\cb4                     <p className=\cf6 \strokec6 "text-slate-400 text-sm tracking-wide"\cf0 \strokec2 >\cf5 \strokec5 Calculated\cf0 \strokec2  through celestial alignment and the stars \cf3 \strokec3 of\cf0 \strokec2  your birth.</p>\cb1 \
+\cb4                  </div>\cb1 \
+\
+\cb4                  <div className=\cf6 \strokec6 "grid grid-cols-1 md:grid-cols-2 gap-8"\cf0 \strokec2 >\cb1 \
+\cb4                    <section>\cb1 \
+\cb4                      <h4 className=\cf6 \strokec6 "text-[#d4af37] text-xs uppercase tracking-widest font-bold mb-2"\cf0 \strokec2 >\cf5 \strokec5 Astrological\cf0 \strokec2  \cf5 \strokec5 Sign\cf0 \strokec2 </h4>\cb1 \
+\cb4                      <p className=\cf6 \strokec6 "text-slate-200 text-sm leading-relaxed"\cf0 \strokec2 >\{state.soulmateProfile.zodiac\}</p>\cb1 \
+\cb4                    </section>\cb1 \
+\cb4                    <section>\cb1 \
+\cb4                      <h4 className=\cf6 \strokec6 "text-[#d4af37] text-xs uppercase tracking-widest font-bold mb-2"\cf0 \strokec2 >\cf5 \strokec5 Aura\cf0 \strokec2  \cf5 \strokec5 Description\cf0 \strokec2 </h4>\cb1 \
+\cb4                      <p className=\cf6 \strokec6 "text-slate-200 text-sm leading-relaxed"\cf0 \strokec2 >\{state.soulmateProfile.aura\}</p>\cb1 \
+\cb4                    </section>\cb1 \
+\cb4                    <section>\cb1 \
+\cb4                      <h4 className=\cf6 \strokec6 "text-[#d4af37] text-xs uppercase tracking-widest font-bold mb-2"\cf0 \strokec2 >\cf5 \strokec5 Personality\cf0 \strokec2  \cf5 \strokec5 Traits\cf0 \strokec2 </h4>\cb1 \
+\cb4                      <p className=\cf6 \strokec6 "text-slate-200 text-sm leading-relaxed"\cf0 \strokec2 >\{state.soulmateProfile.personality\}</p>\cb1 \
+\cb4                    </section>\cb1 \
+\cb4                    <section>\cb1 \
+\cb4                      <h4 className=\cf6 \strokec6 "text-[#d4af37] text-xs uppercase tracking-widest font-bold mb-2"\cf0 \strokec2 >\cf5 \strokec5 Spiritual\cf0 \strokec2  \cf5 \strokec5 Alignment\cf0 \strokec2 </h4>\cb1 \
+\cb4                      <p className=\cf6 \strokec6 "text-slate-200 text-sm leading-relaxed"\cf0 \strokec2 >\{state.soulmateProfile.spiritualAlignment\}</p>\cb1 \
+\cb4                    </section>\cb1 \
+\cb4                  </div>\cb1 \
+\
+\cb4                  <div className=\cf6 \strokec6 "p-8 glass-card rounded-[2rem] border-amber-500/10 space-y-6"\cf0 \strokec2 >\cb1 \
+\cb4                     <div>\cb1 \
+\cb4                       <h4 className=\cf6 \strokec6 "gold-text text-xs uppercase tracking-widest font-bold mb-2"\cf0 \strokec2 >\cf5 \strokec5 Spirit\cf0 \strokec2  \cf5 \strokec5 Animal\cf0 \strokec2 </h4>\cb1 \
+\cb4                       <p className=\cf6 \strokec6 "text-slate-200 text-sm italic"\cf0 \strokec2 >\cf6 \strokec6 "\{state.soulmateProfile.spiritAnimal\}"\cf0 \strokec2 </p>\cb1 \
+\cb4                     </div>\cb1 \
+\cb4                     <div>\cb1 \
+\cb4                       <h4 className=\cf6 \strokec6 "gold-text text-xs uppercase tracking-widest font-bold mb-2"\cf0 \strokec2 >\cf5 \strokec5 When\cf0 \strokec2  & \cf5 \strokec5 Where\cf0 \strokec2 </h4>\cb1 \
+\cb4                       <p className=\cf6 \strokec6 "text-slate-200 text-sm leading-relaxed font-light"\cf0 \strokec2 >\{state.soulmateProfile.timingLocation\}</p>\cb1 \
+\cb4                     </div>\cb1 \
+\cb4                  </div>\cb1 \
+\
+\cb4                  <div className=\cf6 \strokec6 "pt-8 text-center border-t border-white/5"\cf0 \strokec2 >\cb1 \
+\cb4                     <h3 className=\cf6 \strokec6 "text-2xl font-serif gold-text mb-4 italic"\cf0 \strokec2 >\cf5 \strokec5 Conclusion\cf0 \strokec2 </h3>\cb1 \
+\cb4                     <p className=\cf6 \strokec6 "text-slate-400 text-sm leading-relaxed italic max-w-xl mx-auto mb-10"\cf0 \strokec2 >\cb1 \
+\cb4                       \{state.soulmateProfile.conclusion\}\cb1 \
+\cb4                     </p>\cb1 \
+\cb4                     <button onClick=\{() => setState(prev => (\{ ...prev, soulmateProfile: \cf3 \strokec3 null\cf0 \strokec2  \}))\} className=\cf6 \strokec6 "text-[#d4af37] text-xs uppercase tracking-widest hover:underline"\cf0 \strokec2 >\cf5 \strokec5 Clear\cf0 \strokec2  \cf3 \strokec3 this\cf0 \strokec2  \cf5 \strokec5 Vision\cf0 \strokec2 </button>\cb1 \
+\cb4                  </div>\cb1 \
+\cb4                </div>\cb1 \
+\cb4              </div>\cb1 \
+\cb4           </div>\cb1 \
+\cb4         ) : (\cb1 \
+\cb4           <div className=\cf6 \strokec6 "text-center max-w-3xl animate-fade-in-up px-6"\cf0 \strokec2 >\cb1 \
+\cb4             <h1 className=\cf6 \strokec6 "text-6xl md:text-9xl font-serif mb-8 gold-text italic tracking-tighter"\cf0 \strokec2 >\cf5 \strokec5 Divine\cf0 \strokec2  \cf5 \strokec5 Guidance\cf0 \strokec2 </h1>\cb1 \
+\cb4             <p className=\cf6 \strokec6 "text-xl md:text-3xl font-light text-slate-300 tracking-wide max-w-3xl mx-auto leading-relaxed px-6 italic"\cf0 \strokec2 >\cb1 \
+\cb4               \cf5 \strokec5 Unlock\cf0 \strokec2  the secrets \cf3 \strokec3 of\cf0 \strokec2  the cosmos through starlight and ancient wisdom.\cb1 \
+\cb4             </p>\cb1 \
+\cb4             <div className=\cf6 \strokec6 "mt-16 flex justify-center"\cf0 \strokec2 >\cb1 \
+\cb4               <div className=\cf6 \strokec6 "w-2 h-40 bg-gradient-to-b from-[#d4af37] to-transparent shadow-[0_0_20px_rgba(212,175,55,0.6)]"\cf0 \strokec2 ></div>\cb1 \
+\cb4             </div>\cb1 \
+\cb4           </div>\cb1 \
+\cb4         )\}\cb1 \
+\cb4       </header>\cb1 \
+\
+\cb4       \{isSoulmateWizardOpen && (\cb1 \
+\cb4         <div className=\cf6 \strokec6 "fixed inset-0 z-[100] bg-midnight/95 backdrop-blur-xl flex items-center justify-center p-6"\cf0 \strokec2 >\cb1 \
+\cb4           <div className=\cf6 \strokec6 "w-full max-w-xl glass-card rounded-[4rem] p-12 border-4 border-[#d4af37]/40 animate-scale-in shadow-[0_0_100px_rgba(0,0,0,0.8)]"\cf0 \strokec2 >\cb1 \
+\cb4             <div className=\cf6 \strokec6 "flex justify-between items-center mb-10"\cf0 \strokec2 >\cb1 \
+\cb4               <h3 className=\cf6 \strokec6 "text-3xl font-serif gold-text italic"\cf0 \strokec2 >\cf5 \strokec5 Soulmate\cf0 \strokec2  \cf5 \strokec5 Ritual\cf0 \strokec2 </h3>\cb1 \
+\cb4               <button onClick=\{() => setIsSoulmateWizardOpen(\cf3 \strokec3 false\cf0 \strokec2 )\} className=\cf6 \strokec6 "text-slate-400 hover:text-white transition-colors text-xl"\cf0 \strokec2 >\cf9 \strokec9 \uc0\u10005 \cf0 \strokec2 </button>\cb1 \
+\cb4             </div>\cb1 \
+\cb4             <form onSubmit=\{handleSoulmateMatch\} className=\cf6 \strokec6 "space-y-6"\cf0 \strokec2 >\cb1 \
+\cb4               <div className=\cf6 \strokec6 "space-y-2"\cf0 \strokec2 >\cb1 \
+\cb4                 <label className=\cf6 \strokec6 "text-[12px] uppercase tracking-[0.3em] text-[#d4af37] font-black"\cf0 \strokec2 >\cf5 \strokec5 Date\cf0 \strokec2  \cf3 \strokec3 of\cf0 \strokec2  \cf5 \strokec5 Birth\cf0 \strokec2 </label>\cb1 \
+\cb4                 <input required \cf3 \strokec3 type\cf0 \strokec2 =\cf6 \strokec6 "date"\cf0 \strokec2  className=\cf6 \strokec6 "w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-base focus:outline-none focus:border-[#d4af37] transition-all"\cf0 \strokec2  \cb1 \
+\cb4                   value=\{soulmateFormData.dob\} onChange=\{e => setSoulmateFormData(\{...soulmateFormData, dob: e.target.value\})\} />\cb1 \
+\cb4               </div>\cb1 \
+\cb4               <div className=\cf6 \strokec6 "space-y-2"\cf0 \strokec2 >\cb1 \
+\cb4                 <label className=\cf6 \strokec6 "text-[12px] uppercase tracking-[0.3em] text-[#d4af37] font-black"\cf0 \strokec2 >\cf5 \strokec5 Place\cf0 \strokec2  \cf3 \strokec3 of\cf0 \strokec2  \cf5 \strokec5 Birth\cf0 \strokec2 </label>\cb1 \
+\cb4                 <input required \cf3 \strokec3 type\cf0 \strokec2 =\cf6 \strokec6 "text"\cf0 \strokec2  placeholder=\cf6 \strokec6 "City, Country"\cf0 \strokec2  className=\cf6 \strokec6 "w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-base focus:outline-none focus:border-[#d4af37] transition-all"\cf0 \strokec2  \cb1 \
+\cb4                   value=\{soulmateFormData.pob\} onChange=\{e => setSoulmateFormData(\{...soulmateFormData, pob: e.target.value\})\} />\cb1 \
+\cb4               </div>\cb1 \
+\cb4               <div className=\cf6 \strokec6 "space-y-2"\cf0 \strokec2 >\cb1 \
+\cb4                 <label className=\cf6 \strokec6 "text-[12px] uppercase tracking-[0.3em] text-[#d4af37] font-black"\cf0 \strokec2 >\cf5 \strokec5 Time\cf0 \strokec2  \cf3 \strokec3 of\cf0 \strokec2  \cf5 \strokec5 Birth\cf0 \strokec2 </label>\cb1 \
+\cb4                 <input required \cf3 \strokec3 type\cf0 \strokec2 =\cf6 \strokec6 "time"\cf0 \strokec2  className=\cf6 \strokec6 "w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-base focus:outline-none focus:border-[#d4af37] transition-all"\cf0 \strokec2  \cb1 \
+\cb4                   value=\{soulmateFormData.tob\} onChange=\{e => setSoulmateFormData(\{...soulmateFormData, tob: e.target.value\})\} />\cb1 \
+\cb4               </div>\cb1 \
+\cb4               <div className=\cf6 \strokec6 "space-y-2"\cf0 \strokec2 >\cb1 \
+\cb4                 <label className=\cf6 \strokec6 "text-[12px] uppercase tracking-[0.3em] text-[#d4af37] font-black"\cf0 \strokec2 >\cf5 \strokec5 Seeking\cf0 \strokec2 </label>\cb1 \
+\cb4                 <select className=\cf6 \strokec6 "w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-base focus:outline-none focus:border-[#d4af37] transition-all appearance-none"\cf0 \cb1 \strokec2 \
+\cb4                   value=\{soulmateFormData.preference\} onChange=\{e => setSoulmateFormData(\{...soulmateFormData, preference: e.target.value\})\}>\cb1 \
+\cb4                   <option value=\cf6 \strokec6 "man"\cf0 \strokec2 >\cf5 \strokec5 A\cf0 \strokec2  \cf5 \strokec5 Man\cf0 \strokec2 </option>\cb1 \
+\cb4                   <option value=\cf6 \strokec6 "woman"\cf0 \strokec2 >\cf5 \strokec5 A\cf0 \strokec2  \cf5 \strokec5 Woman\cf0 \strokec2 </option>\cb1 \
+\cb4                   <option value=\cf6 \strokec6 "other"\cf0 \strokec2 >\cf5 \strokec5 A\cf0 \strokec2  \cf5 \strokec5 Celestial\cf0 \strokec2  \cf5 \strokec5 Essence\cf0 \strokec2 </option>\cb1 \
+\cb4                 </select>\cb1 \
+\cb4               </div>\cb1 \
+\cb4               <button \cf3 \strokec3 type\cf0 \strokec2 =\cf6 \strokec6 "submit"\cf0 \strokec2  className=\cf6 \strokec6 "w-full py-5 bg-[#d4af37] text-midnight font-black uppercase tracking-[0.5em] rounded-full mt-10 hover:shadow-[0_0_50px_rgba(212,175,55,0.6)] transition-all transform hover:scale-105"\cf0 \strokec2 >\cb1 \
+\cb4                 \cf5 \strokec5 Invoke\cf0 \strokec2  the \cf5 \strokec5 Stars\cf0 \cb1 \strokec2 \
+\cb4               </button>\cb1 \
+\cb4             </form>\cb1 \
+\cb4           </div>\cb1 \
+\cb4         </div>\cb1 \
+\cb4       )\}\cb1 \
+\
+\cb4       \{activeOracleConsultation && (\cb1 \
+\cb4         <\cf5 \strokec5 LiveOracleSession\cf0 \strokec2  oracleName=\{activeOracleConsultation\} onClose=\{() => setActiveOracleConsultation(\cf3 \strokec3 null\cf0 \strokec2 )\} />\cb1 \
+\cb4       )\}\cb1 \
+\
+\cb4       <section id=\{\cf5 \strokec5 SECTIONS\cf0 \strokec2 .\cf5 \strokec5 SPREADS\cf0 \strokec2 \} className=\cf6 \strokec6 "py-20 md:py-32 px-4 md:px-8 max-w-[100rem] mx-auto"\cf0 \strokec2 >\cb1 \
+\cb4         <div className=\cf6 \strokec6 "text-center mb-16 md:mb-24"\cf0 \strokec2 >\cb1 \
+\cb4           <h2 className=\cf6 \strokec6 "text-4xl md:text-5xl font-serif gold-text mb-6 tracking-[0.2em] uppercase"\cf0 \strokec2 >\cf5 \strokec5 Sacred\cf0 \strokec2  \cf5 \strokec5 Spreads\cf0 \strokec2 </h2>\cb1 \
+\cb4           <p className=\cf6 \strokec6 "text-slate-400 uppercase tracking-[0.4em] text-xs font-bold"\cf0 \strokec2 >\cf5 \strokec5 The\cf0 \strokec2  mapping \cf3 \strokec3 of\cf0 \strokec2  your journey</p>\cb1 \
+\cb4         </div>\cb1 \
+\cb4         <div className=\cf6 \strokec6 "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12"\cf0 \strokec2 >\cb1 \
+\cb4           \{\cf5 \strokec5 SPREADS_DEFAULTS\cf0 \strokec2 .map((s) => (\cb1 \
+\cb4             <div key=\{s.id\} className=\cf6 \strokec6 "glass-card p-6 md:p-10 rounded-[2.5rem] md:rounded-[3.5rem] group cursor-pointer gold-glow-hover transition-all duration-700 border-2 border-[#d4af37]/10"\cf0 \strokec2 >\cb1 \
+\cb4               <div className=\cf6 \strokec6 "aspect-[3/4] mb-8 md:mb-10 overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border-2 border-[#d4af37]/30 relative mx-auto w-[90%] shadow-2xl"\cf0 \strokec2 >\cb1 \
+\cb4                 <img src=\{spreadImages[s.id]\} alt=\{s.title\} className=\cf6 \strokec6 "w-full h-full object-cover grayscale-[0.6] group-hover:grayscale-0 transition-all duration-1000 scale-100 group-hover:scale-110"\cf0 \strokec2  />\cb1 \
+\cb4                 <div className=\cf6 \strokec6 "absolute inset-0 bg-midnight/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-8 md:p-10"\cf0 \strokec2 >\cb1 \
+\cb4                   <input \cb1 \
+\cb4                     \cf3 \strokec3 type\cf0 \strokec2 =\cf6 \strokec6 "file"\cf0 \strokec2  \cb1 \
+\cb4                     accept=\cf6 \strokec6 "image/*"\cf0 \strokec2  \cb1 \
+\cb4                     className=\cf6 \strokec6 "hidden"\cf0 \strokec2  \cb1 \
+\cb4                     ref=\{el => \{ spreadInputRefs.current[s.id] = el; \}\}\cb1 \
+\cb4                     onChange=\{(e) => e.target.files && handleSpreadImageUpload(s.id, e.target.files[\cf7 \strokec7 0\cf0 \strokec2 ])\}\cb1 \
+\cb4                   />\cb1 \
+\cb4                   <button \cb1 \
+\cb4                     onClick=\{(e) => \{\cb1 \
+\cb4                         e.stopPropagation();\cb1 \
+\cb4                         spreadInputRefs.current[s.id]?.click();\cb1 \
+\cb4                     \}\}\cb1 \
+\cb4                     className=\cf6 \strokec6 "bg-[#d4af37] text-midnight text-[10px] md:text-[11px] font-black uppercase tracking-widest px-6 md:px-8 py-2 md:py-3 rounded-full mb-4 hover:scale-110 transition-transform shadow-lg"\cf0 \cb1 \strokec2 \
+\cb4                   >\cb1 \
+\cb4                     \cf5 \strokec5 Custom\cf0 \strokec2  \cf5 \strokec5 Artifact\cf0 \cb1 \strokec2 \
+\cb4                   </button>\cb1 \
+\cb4                 </div>\cb1 \
+\cb4               </div>\cb1 \
+\cb4               <div className=\cf6 \strokec6 "text-center px-4"\cf0 \strokec2 >\cb1 \
+\cb4                 <span className=\cf6 \strokec6 "text-[10px] md:text-xs uppercase tracking-[0.4em] text-[#d4af37] font-black"\cf0 \strokec2 >\{s.\cf3 \strokec3 type\cf0 \strokec2 \}</span>\cb1 \
+\cb4                 <h3 className=\cf6 \strokec6 "text-2xl md:text-3xl font-serif mt-4 mb-4 md:mb-5 text-slate-100"\cf0 \strokec2 >\{s.title\}</h3>\cb1 \
+\cb4                 <p className=\cf6 \strokec6 "text-xs md:text-sm text-slate-400 font-light leading-relaxed mb-8 md:mb-10 italic"\cf0 \strokec2 >\cf6 \strokec6 "\{s.desc\}"\cf0 \strokec2 </p>\cb1 \
+\cb4                 <button \cb1 \
+\cb4                   onClick=\{() => startRitual(s)\}\cb1 \
+\cb4                   className=\cf6 \strokec6 "w-full py-4 md:py-5 rounded-full border-2 border-[#d4af37]/40 text-[10px] md:text-[12px] font-black uppercase tracking-[0.5em] hover:bg-[#d4af37] hover:text-midnight transition-all shadow-xl bg-midnight/40"\cf0 \cb1 \strokec2 \
+\cb4                 >\cb1 \
+\cb4                   \cf5 \strokec5 Begin\cf0 \strokec2  \cf5 \strokec5 Ritual\cf0 \cb1 \strokec2 \
+\cb4                 </button>\cb1 \
+\cb4               </div>\cb1 \
+\cb4             </div>\cb1 \
+\cb4           ))\}\cb1 \
+\cb4         </div>\cb1 \
+\cb4       </section>\cb1 \
+\
+\cb4       <section id=\{\cf5 \strokec5 SECTIONS\cf0 \strokec2 .\cf5 \strokec5 ORACLES\cf0 \strokec2 \} className=\cf6 \strokec6 "py-32 bg-gradient-to-b from-transparent via-[#d4af37]/5 to-transparent"\cf0 \strokec2 >\cb1 \
+\cb4         <div className=\cf6 \strokec6 "max-w-7xl mx-auto px-10"\cf0 \strokec2 >\cb1 \
+\cb4           <div className=\cf6 \strokec6 "text-center mb-28"\cf0 \strokec2 >\cb1 \
+\cb4             <h2 className=\cf6 \strokec6 "text-5xl font-serif gold-text mb-6 tracking-[0.2em] uppercase italic"\cf0 \strokec2 >\cf5 \strokec5 Sacred\cf0 \strokec2  \cf5 \strokec5 Portals\cf0 \strokec2 </h2>\cb1 \
+\cb4             <p className=\cf6 \strokec6 "text-slate-400 uppercase tracking-[0.4em] text-xs font-bold"\cf0 \strokec2 >\cf5 \strokec5 Communion\cf0 \strokec2  \cf3 \strokec3 with\cf0 \strokec2  the \cf5 \strokec5 High\cf0 \strokec2  \cf5 \strokec5 Oracles\cf0 \strokec2 </p>\cb1 \
+\cb4           </div>\cb1 \
+\cb4           <div className=\cf6 \strokec6 "grid grid-cols-1 md:grid-cols-3 gap-20"\cf0 \strokec2 >\cb1 \
+\cb4             \{\cf5 \strokec5 ORACLE_DEFAULTS\cf0 \strokec2 .map((o) => (\cb1 \
+\cb4               <div key=\{o.name\} className=\cf6 \strokec6 "flex flex-col items-center text-center group"\cf0 \strokec2 >\cb1 \
+\cb4                 <div className=\cf6 \strokec6 "relative w-72 h-72 md:w-full aspect-square mb-12"\cf0 \strokec2 >\cb1 \
+\cb4                   <div className=\cf6 \strokec6 "absolute inset-0 rounded-full border-4 border-dashed border-[#d4af37]/30 group-hover:rotate-180 transition-transform duration-[15s] ease-linear"\cf0 \strokec2 ></div>\cb1 \
+\cb4                   <div className=\cf6 \strokec6 "absolute inset-6 rounded-full overflow-hidden border-4 border-[#d4af37] relative shadow-[0_0_80px_rgba(212,175,55,0.3)]"\cf0 \strokec2 >\cb1 \
+\cb4                     <img src=\{oracleImages[o.name]\} alt=\{o.name\} className=\cf6 \strokec6 "w-full h-full object-cover scale-105 group-hover:scale-125 transition-transform duration-1000"\cf0 \strokec2  />\cb1 \
+\cb4                     <div className=\cf6 \strokec6 "absolute inset-0 bg-midnight/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-8"\cf0 \strokec2 >\cb1 \
+\cb4                       <input \cb1 \
+\cb4                         \cf3 \strokec3 type\cf0 \strokec2 =\cf6 \strokec6 "file"\cf0 \strokec2  \cb1 \
+\cb4                         accept=\cf6 \strokec6 "image/*"\cf0 \strokec2  \cb1 \
+\cb4                         className=\cf6 \strokec6 "hidden"\cf0 \strokec2  \cb1 \
+\cb4                         ref=\{el => \{ oracleInputRefs.current[o.name] = el; \}\}\cb1 \
+\cb4                         onChange=\{(e) => e.target.files && handleOracleImageUpload(o.name, e.target.files[\cf7 \strokec7 0\cf0 \strokec2 ])\}\cb1 \
+\cb4                       />\cb1 \
+\cb4                       <button \cb1 \
+\cb4                         onClick=\{() => oracleInputRefs.current[o.name]?.click()\}\cb1 \
+\cb4                         className=\cf6 \strokec6 "bg-[#d4af37] text-midnight text-[11px] font-black uppercase tracking-widest px-8 py-3 rounded-full mb-4 hover:scale-110 transition-transform shadow-lg"\cf0 \cb1 \strokec2 \
+\cb4                       >\cb1 \
+\cb4                         \cf5 \strokec5 New\cf0 \strokec2  \cf5 \strokec5 Essence\cf0 \cb1 \strokec2 \
+\cb4                       </button>\cb1 \
+\cb4                     </div>\cb1 \
+\cb4                   </div>\cb1 \
+\cb4                   <div className=\cf6 \strokec6 "absolute -bottom-4 left-1/2 -translate-x-1/2 bg-[#d4af37] text-midnight text-[11px] font-black uppercase tracking-[0.4em] px-10 py-3 rounded-full shadow-2xl z-20"\cf0 \strokec2 >\cf5 \strokec5 Awakened\cf0 \strokec2 </div>\cb1 \
+\cb4                 </div>\cb1 \
+\cb4                 <h3 className=\cf6 \strokec6 "text-4xl font-serif gold-text mb-2 tracking-tight italic"\cf0 \strokec2 >\{o.name\}</h3>\cb1 \
+\cb4                 <p className=\cf6 \strokec6 "text-sm text-slate-400 mt-2 mb-6 italic tracking-widest"\cf0 \strokec2 >\{o.title\}</p>\cb1 \
+\cb4                 <p className=\cf6 \strokec6 "text-xs text-slate-500 max-w-[240px] mb-10 leading-relaxed font-light"\cf0 \strokec2 >\cf6 \strokec6 "\{o.desc\}"\cf0 \strokec2 </p>\cb1 \
+\cb4                 <div className=\cf6 \strokec6 "flex flex-col gap-4"\cf0 \strokec2 >\cb1 \
+\cb4                   <button \cb1 \
+\cb4                     onClick=\{() => setActiveOracleConsultation(o.name)\}\cb1 \
+\cb4                     className=\cf6 \strokec6 "px-14 py-4 bg-slate-100 text-midnight text-[11px] font-black uppercase tracking-[0.6em] rounded-full hover:bg-[#d4af37] transition-all shadow-2xl"\cf0 \cb1 \strokec2 \
+\cb4                   >\cb1 \
+\cb4                     \cf5 \strokec5 Consult\cf0 \strokec2  the \cf5 \strokec5 Oracle\cf0 \cb1 \strokec2 \
+\cb4                   </button>\cb1 \
+\cb4                 </div>\cb1 \
+\cb4               </div>\cb1 \
+\cb4             ))\}\cb1 \
+\cb4           </div>\cb1 \
+\cb4         </div>\cb1 \
+\cb4       </section>\cb1 \
+\
+\cb4       <section id=\{\cf5 \strokec5 SECTIONS\cf0 \strokec2 .\cf5 \strokec5 SOULMATE\cf0 \strokec2 \} className=\cf6 \strokec6 "py-40 px-8"\cf0 \strokec2 >\cb1 \
+\cb4         <div className=\cf6 \strokec6 "max-w-6xl mx-auto glass-card rounded-[3rem] md:rounded-[5rem] p-12 md:p-36 relative overflow-hidden text-center shadow-[0_50px_150px_rgba(0,0,0,0.8)] border-4 border-pink-500/20"\cf0 \strokec2 >\cb1 \
+\cb4           <div className=\cf6 \strokec6 "absolute -top-40 -right-40 w-96 h-96 bg-pink-500/10 rounded-full blur-[150px]"\cf0 \strokec2 ></div>\cb1 \
+\cb4           <div className=\cf6 \strokec6 "absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-[150px]"\cf0 \strokec2 ></div>\cb1 \
+\cb4           <div className=\cf6 \strokec6 "mb-14 inline-flex items-center justify-center w-24 h-24 md:w-32 md:h-32 rounded-full bg-pink-500/10 text-pink-500 border-4 border-pink-500/30 animate-pulse shadow-[0_0_60px_rgba(236,72,153,0.4)]"\cf0 \strokec2 >\cb1 \
+\cb4             <svg className=\cf6 \strokec6 "w-12 h-12 md:w-16 md:h-16"\cf0 \strokec2  fill=\cf6 \strokec6 "currentColor"\cf0 \strokec2  viewBox=\cf6 \strokec6 "0 0 20 20"\cf0 \strokec2 >\cb1 \
+\cb4               <path fillRule=\cf6 \strokec6 "evenodd"\cf0 \strokec2  d=\cf6 \strokec6 "M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"\cf0 \strokec2  clipRule=\cf6 \strokec6 "evenodd"\cf0 \strokec2  />\cb1 \
+\cb4             </svg>\cb1 \
+\cb4           </div>\cb1 \
+\cb4           <h2 className=\cf6 \strokec6 "text-4xl md:text-8xl font-serif gold-text mb-8 md:mb-10 italic tracking-tight"\cf0 \strokec2 >\cf5 \strokec5 The\cf0 \strokec2  \cf5 \strokec5 Star\cf0 \strokec2 -\cf5 \strokec5 Bound\cf0 \strokec2 </h2>\cb1 \
+\cb4           <p className=\cf6 \strokec6 "text-lg md:text-3xl text-slate-200 font-light max-w-4xl mx-auto leading-relaxed mb-12 md:mb-20 italic px-4"\cf0 \strokec2 >\cb1 \
+\cb4             \cf5 \strokec5 Is\cf0 \strokec2  your future written \cf3 \strokec3 in\cf0 \strokec2  the celestial currents? \cf5 \strokec5 Align\cf0 \strokec2  your birth coordinates and discover the soul destined to walk \cf3 \strokec3 with\cf0 \strokec2  you.\cb1 \
+\cb4           </p>\cb1 \
+\cb4           <button \cb1 \
+\cb4             onClick=\{() => setIsSoulmateWizardOpen(\cf3 \strokec3 true\cf0 \strokec2 )\}\cb1 \
+\cb4             className=\cf6 \strokec6 "px-14 md:px-24 py-5 md:py-8 bg-gradient-to-r from-pink-700 to-indigo-800 text-white rounded-full text-[10px] md:text-sm font-black uppercase tracking-[0.6em] shadow-[0_30px_70px_rgba(0,0,0,0.6)] hover:scale-110 hover:shadow-pink-500/40 transition-all border-2 border-white/20"\cf0 \cb1 \strokec2 \
+\cb4           >\cb1 \
+\cb4             \cf5 \strokec5 Find\cf0 \strokec2  \cf5 \strokec5 Your\cf0 \strokec2  \cf5 \strokec5 Match\cf0 \cb1 \strokec2 \
+\cb4           </button>\cb1 \
+\cb4         </div>\cb1 \
+\cb4       </section>\cb1 \
+\
+\cb4       <section id=\{\cf5 \strokec5 SECTIONS\cf0 \strokec2 .\cf5 \strokec5 VOID\cf0 \strokec2 \} className=\cf6 \strokec6 "py-40 px-4 md:px-8"\cf0 \strokec2 >\cb1 \
+\cb4         <div className=\cf6 \strokec6 "max-w-6xl mx-auto text-center"\cf0 \strokec2 >\cb1 \
+\cb4           <div className=\cf6 \strokec6 "mb-16 md:mb-24"\cf0 \strokec2 >\cb1 \
+\cb4             <h2 className=\cf6 \strokec6 "text-5xl md:text-8xl font-serif gold-text mb-8 italic tracking-tighter"\cf0 \strokec2 >\cf5 \strokec5 The\cf0 \strokec2  \cf5 \strokec5 Void\cf0 \strokec2 </h2>\cb1 \
+\cb4             <p className=\cf6 \strokec6 "text-lg md:text-2xl text-slate-300 font-light tracking-wide max-w-3xl mx-auto leading-relaxed italic"\cf0 \strokec2 >\cb1 \
+\cb4               \cf5 \strokec5 A\cf0 \strokec2  dedicated space \cf3 \strokec3 for\cf0 \strokec2  conjuring visions \cf3 \strokec3 from\cf0 \strokec2  the ether. \cf5 \strokec5 Speak\cf0 \strokec2  your truth and watch the stars align.\cb1 \
+\cb4             </p>\cb1 \
+\cb4           </div>\cb1 \
+\cb4           <div className=\cf6 \strokec6 "w-full max-w-4xl mx-auto"\cf0 \strokec2 >\cb1 \
+\cb4              <\cf5 \strokec5 PromptBar\cf0 \strokec2  \cb1 \
+\cb4                 prompt=\{prompt\}\cb1 \
+\cb4                 setPrompt=\{setPrompt\}\cb1 \
+\cb4                 onAction=\{handleAction\}\cb1 \
+\cb4                 isLoading=\{state.isLoading\}\cb1 \
+\cb4                 mode=\{state.currentImage ? \cf5 \strokec5 AppMode\cf0 \strokec2 .\cf5 \strokec5 EDIT\cf0 \strokec2  : \cf5 \strokec5 AppMode\cf0 \strokec2 .\cf5 \strokec5 CREATE\cf0 \strokec2 \}\cb1 \
+\cb4                 uploadedImage=\{uploadedImage\}\cb1 \
+\cb4                 onUpload=\{(file) => \{\cb1 \
+\cb4                   \cf3 \strokec3 const\cf0 \strokec2  reader = \cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 FileReader\cf0 \strokec2 ();\cb1 \
+\cb4                   reader.onloadend = () => \{\cb1 \
+\cb4                      \cf3 \strokec3 const\cf0 \strokec2  res = reader.result \cf3 \strokec3 as\cf0 \strokec2  \cf3 \strokec3 string\cf0 \strokec2 ;\cb1 \
+\cb4                      \cf3 \strokec3 const\cf0 \strokec2  matches = res.match(\cf10 \strokec10 /^data:(.+);base64,(.+)$/\cf0 \strokec2 );\cb1 \
+\cb4                      \cf3 \strokec3 if\cf0 \strokec2  (matches) setUploadedImage(\{ mimeType: matches[\cf7 \strokec7 1\cf0 \strokec2 ], base64: matches[\cf7 \strokec7 2\cf0 \strokec2 ] \});\cb1 \
+\cb4                   \};\cb1 \
+\cb4                   reader.readAsDataURL(file);\cb1 \
+\cb4                 \}\}\cb1 \
+\cb4                 onClearUpload=\{() => setUploadedImage(\cf3 \strokec3 null\cf0 \strokec2 )\}\cb1 \
+\cb4               />\cb1 \
+\cb4           </div>\cb1 \
+\cb4           <div className=\cf6 \strokec6 "mt-16 md:mt-24 flex flex-col items-center"\cf0 \strokec2 >\cb1 \
+\cb4             \{state.isLoading && (\cb1 \
+\cb4               <div className=\cf6 \strokec6 "w-full max-w-2xl"\cf0 \strokec2 >\cb1 \
+\cb4                 <\cf5 \strokec5 LoadingOracle\cf0 \strokec2  message=\cf6 \strokec6 "The spirits are weaving your vision..."\cf0 \strokec2  />\cb1 \
+\cb4               </div>\cb1 \
+\cb4             )\}\cb1 \
+\cb4             \{!state.isLoading && state.currentImage && (\cb1 \
+\cb4               <div className=\cf6 \strokec6 "w-full max-w-2xl animate-fade-in space-y-8"\cf0 \strokec2 >\cb1 \
+\cb4                  <\cf5 \strokec5 ImageDisplay\cf0 \strokec2  \cb1 \
+\cb4                     image=\{state.currentImage\} \cb1 \
+\cb4                     onDownload=\{() => \{\}\}\cb1 \
+\cb4                     onReset=\{() => setState(s => (\{...s, currentImage: \cf3 \strokec3 null\cf0 \strokec2 \}))\}\cb1 \
+\cb4                   />\cb1 \
+\cb4                   <p className=\cf6 \strokec6 "text-sm italic text-amber-200/60 uppercase tracking-widest"\cf0 \strokec2 >\cf5 \strokec5 A\cf0 \strokec2  celestial vision has been conjured</p>\cb1 \
+\cb4               </div>\cb1 \
+\cb4             )\}\cb1 \
+\cb4             \{!state.isLoading && !state.currentImage && (\cb1 \
+\cb4               <div className=\cf6 \strokec6 "py-20 opacity-10"\cf0 \strokec2 >\cb1 \
+\cb4                  <div className=\cf6 \strokec6 "w-32 h-32 border-4 border-dashed border-[#d4af37]/30 rounded-full animate-spin-slow"\cf0 \strokec2 ></div>\cb1 \
+\cb4               </div>\cb1 \
+\cb4             )\}\cb1 \
+\cb4           </div>\cb1 \
+\cb4         </div>\cb1 \
+\cb4       </section>\cb1 \
+\
+\cb4       <footer className=\cf6 \strokec6 "py-20 text-center border-t border-white/5 opacity-40"\cf0 \strokec2 >\cb1 \
+\cb4         <div className=\cf6 \strokec6 "flex flex-col items-center gap-4"\cf0 \strokec2 >\cb1 \
+\cb4           <div className=\cf6 \strokec6 "w-8 h-8 rounded-full bg-gradient-to-tr from-[#d4af37] to-amber-200 flex items-center justify-center text-midnight font-bold"\cf0 \strokec2 >\cf5 \strokec5 C\cf0 \strokec2 </div>\cb1 \
+\cb4           <span className=\cf6 \strokec6 "font-serif text-sm tracking-[0.4em] gold-text uppercase"\cf0 \strokec2 >\cf5 \strokec5 Celestial\cf0 \strokec2  \cf5 \strokec5 Arcana\cf0 \strokec2 </span>\cb1 \
+\cb4           <p className=\cf6 \strokec6 "text-[10px] uppercase tracking-widest"\cf0 \strokec2 >\cf9 \strokec9 \'a9\cf0 \strokec2  \cf5 \strokec5 Sacred\cf0 \strokec2  \cf5 \strokec5 Knowledge\cf0 \strokec2  \cf7 \strokec7 2025\cf0 \strokec2 </p>\cb1 \
+\cb4         </div>\cb1 \
+\cb4       </footer>\cb1 \
+\cb4     </div>\cb1 \
+\cb4   );\cb1 \
+\cb4 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 export\cf0 \strokec2  \cf3 \strokec3 default\cf0 \strokec2  \cf5 \strokec5 App\cf0 \strokec2 ;\cb1 \
+\
+}

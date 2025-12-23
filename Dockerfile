@@ -1,26 +1,26 @@
+# Use Python 3.11 slim image
 FROM python:3.11-slim
 
+# Set working directory
 WORKDIR /app
 
-# Install system dependencies for audio/video processing
+# Install system dependencies for audio processing
 RUN apt-get update && apt-get install -y \
-    ffmpeg \
-    libavformat-dev \
-    libavcodec-dev \
-    libavdevice-dev \
-    libavutil-dev \
-    libavfilter-dev \
-    libswscale-dev \
-    libswresample-dev \
-    pkg-config \
+    gcc \
+    libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies
+# Copy requirements first for better caching
 COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY . .
+COPY agent.py .
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
 
 # Run the agent
 CMD ["python", "agent.py", "start"]

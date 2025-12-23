@@ -1,0 +1,208 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2636
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red0\green0\blue255;\red255\green255\blue254;
+\red14\green110\blue109;\red144\green1\blue18;\red19\green118\blue70;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;\cssrgb\c0\c0\c100000;\cssrgb\c100000\c100000\c99608;
+\cssrgb\c0\c50196\c50196;\cssrgb\c63922\c8235\c8235;\cssrgb\c3529\c52549\c34510;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs24 \cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 import\cf0 \strokec2  \{ \cf5 \strokec5 GoogleGenAI\cf0 \strokec2 , \cf5 \strokec5 Type\cf0 \strokec2  \} \cf3 \strokec3 from\cf0 \strokec2  \cf6 \strokec6 "@google/genai"\cf0 \strokec2 ;\cb1 \
+\cf3 \cb4 \strokec3 import\cf0 \strokec2  \{ \cf5 \strokec5 GeneratedImage\cf0 \strokec2 , \cf5 \strokec5 SoulmateProfile\cf0 \strokec2 , \cf5 \strokec5 TarotReading\cf0 \strokec2 , \cf5 \strokec5 DeckType\cf0 \strokec2  \} \cf3 \strokec3 from\cf0 \strokec2  \cf6 \strokec6 "../types"\cf0 \strokec2 ;\cb1 \
+\
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  ai = \cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 GoogleGenAI\cf0 \strokec2 (\{ apiKey: process.env.\cf5 \strokec5 API_KEY\cf0 \strokec2  \});\cb1 \
+\
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  \cf5 \strokec5 IMAGE_MODEL\cf0 \strokec2  = \cf6 \strokec6 'gemini-2.5-flash-image'\cf0 \strokec2 ;\cb1 \
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  \cf5 \strokec5 TEXT_MODEL\cf0 \strokec2  = \cf6 \strokec6 'gemini-3-pro-preview'\cf0 \strokec2 ;\cb1 \
+\
+\cf3 \cb4 \strokec3 export\cf0 \strokec2  \cf3 \strokec3 const\cf0 \strokec2  generateInitialImage = \cf3 \strokec3 async\cf0 \strokec2  (prompt: \cf3 \strokec3 string\cf0 \strokec2 ): \cf5 \strokec5 Promise\cf0 \strokec2 <\cf5 \strokec5 GeneratedImage\cf0 \strokec2 > => \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   \cf3 \strokec3 try\cf0 \strokec2  \{\cb1 \
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  response = \cf3 \strokec3 await\cf0 \strokec2  ai.models.generateContent(\{\cb1 \
+\cb4       model: \cf5 \strokec5 IMAGE_MODEL\cf0 \strokec2 ,\cb1 \
+\cb4       contents: prompt,\cb1 \
+\cb4     \});\cb1 \
+\cb4     \cf3 \strokec3 return\cf0 \strokec2  extractImageFromResponse(response);\cb1 \
+\cb4   \} \cf3 \strokec3 catch\cf0 \strokec2  (error: \cf3 \strokec3 any\cf0 \strokec2 ) \{\cb1 \
+\cb4     console.error(\cf6 \strokec6 "Generation error:"\cf0 \strokec2 , error);\cb1 \
+\cb4     \cf3 \strokec3 throw\cf0 \strokec2  \cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 Error\cf0 \strokec2 (error.message || \cf6 \strokec6 "Failed to generate image."\cf0 \strokec2 );\cb1 \
+\cb4   \}\cb1 \
+\cb4 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 export\cf0 \strokec2  \cf3 \strokec3 const\cf0 \strokec2  editImage = \cf3 \strokec3 async\cf0 \strokec2  (base64Image: \cf3 \strokec3 string\cf0 \strokec2 , mimeType: \cf3 \strokec3 string\cf0 \strokec2 , prompt: \cf3 \strokec3 string\cf0 \strokec2 ): \cf5 \strokec5 Promise\cf0 \strokec2 <\cf5 \strokec5 GeneratedImage\cf0 \strokec2 > => \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   \cf3 \strokec3 try\cf0 \strokec2  \{\cb1 \
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  response = \cf3 \strokec3 await\cf0 \strokec2  ai.models.generateContent(\{\cb1 \
+\cb4       model: \cf5 \strokec5 IMAGE_MODEL\cf0 \strokec2 ,\cb1 \
+\cb4       contents: \{\cb1 \
+\cb4         parts: [\cb1 \
+\cb4           \{ inlineData: \{ mimeType: mimeType, data: base64Image \} \},\cb1 \
+\cb4           \{ text: prompt \}\cb1 \
+\cb4         ]\cb1 \
+\cb4       \}\cb1 \
+\cb4     \});\cb1 \
+\cb4     \cf3 \strokec3 return\cf0 \strokec2  extractImageFromResponse(response);\cb1 \
+\cb4   \} \cf3 \strokec3 catch\cf0 \strokec2  (error: \cf3 \strokec3 any\cf0 \strokec2 ) \{\cb1 \
+\cb4     console.error(\cf6 \strokec6 "Editing error:"\cf0 \strokec2 , error);\cb1 \
+\cb4     \cf3 \strokec3 throw\cf0 \strokec2  \cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 Error\cf0 \strokec2 (error.message || \cf6 \strokec6 "Failed to edit image."\cf0 \strokec2 );\cb1 \
+\cb4   \}\cb1 \
+\cb4 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 export\cf0 \strokec2  \cf3 \strokec3 const\cf0 \strokec2  generateCardArt = \cf3 \strokec3 async\cf0 \strokec2  (cardName: \cf3 \strokec3 string\cf0 \strokec2 , deckType: \cf5 \strokec5 DeckType\cf0 \strokec2 ): \cf5 \strokec5 Promise\cf0 \strokec2 <\cf3 \strokec3 string\cf0 \strokec2 > => \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   \cf3 \strokec3 let\cf0 \strokec2  stylePrompt = \cf6 \strokec6 ""\cf0 \strokec2 ;\cb1 \
+\cb4   \cf3 \strokec3 if\cf0 \strokec2  (deckType === \cf6 \strokec6 'Rider-Waite'\cf0 \strokec2 ) \{\cb1 \
+\cb4     stylePrompt = \cf6 \strokec6 "Pamela Colman Smith 1910 Rider-Waite style. Authentic watercolor and ink, thick black outlines, bold symbolic colors, parchment texture, classic occult look."\cf0 \strokec2 ;\cb1 \
+\cb4   \} \cf3 \strokec3 else\cf0 \strokec2  \cf3 \strokec3 if\cf0 \strokec2  (deckType === \cf6 \strokec6 'Tarot de Marseille'\cf0 \strokec2 ) \{\cb1 \
+\cb4     stylePrompt = \cf6 \strokec6 "18th century woodcut style, Tarot de Marseille. Hand-carved aesthetic, limited palette of primary red, blue, and yellow on cream antique paper. Medieval centered composition."\cf0 \strokec2 ;\cb1 \
+\cb4   \} \cf3 \strokec3 else\cf0 \strokec2  \cf3 \strokec3 if\cf0 \strokec2  (deckType === \cf6 \strokec6 'Thoth'\cf0 \strokec2 ) \{\cb1 \
+\cb4     stylePrompt = \cf6 \strokec6 "Lady Frieda Harris Thoth style. Surreal geometric abstraction, intense color gradients, esoteric Egyptian and astrological symbols, dark and luminous atmosphere, complex layering."\cf0 \strokec2 ;\cb1 \
+\cb4   \}\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  prompt = \cf6 \strokec6 `A vertical tarot card face showing the full figure of "\cf0 \strokec2 $\{cardName\}\cf6 \strokec6 ". \cf0 \strokec2 $\{stylePrompt\}\cf6 \strokec6  The image must be a full-bleed illustration that fills the entire frame. No borders, no frames, no text on the image itself. High fidelity, masterpiece quality.`\cf0 \strokec2 ;\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  response = \cf3 \strokec3 await\cf0 \strokec2  ai.models.generateContent(\{\cb1 \
+\cb4     model: \cf5 \strokec5 IMAGE_MODEL\cf0 \strokec2 ,\cb1 \
+\cb4     contents: prompt,\cb1 \
+\cb4     config: \{\cb1 \
+\cb4       imageConfig: \{\cb1 \
+\cb4         aspectRatio: \cf6 \strokec6 "9:16"\cf0 \cb1 \strokec2 \
+\cb4       \}\cb1 \
+\cb4     \}\cb1 \
+\cb4   \});\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  img = extractImageFromResponse(response);\cb1 \
+\cb4   \cf3 \strokec3 return\cf0 \strokec2  img.base64;\cb1 \
+\cb4 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 export\cf0 \strokec2  \cf3 \strokec3 const\cf0 \strokec2  generateTarotReading = \cf3 \strokec3 async\cf0 \strokec2  (spreadType: \cf3 \strokec3 string\cf0 \strokec2 , cardCount: \cf3 \strokec3 number\cf0 \strokec2 , deckType: \cf5 \strokec5 DeckType\cf0 \strokec2 ): \cf5 \strokec5 Promise\cf0 \strokec2 <\cf5 \strokec5 TarotReading\cf0 \strokec2 > => \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   \cf3 \strokec3 try\cf0 \strokec2  \{\cb1 \
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  response = \cf3 \strokec3 await\cf0 \strokec2  ai.models.generateContent(\{\cb1 \
+\cb4       model: \cf5 \strokec5 TEXT_MODEL\cf0 \strokec2 ,\cb1 \
+\cb4       contents: \cf6 \strokec6 `Perform a professional and mystical tarot reading for the spread type: "\cf0 \strokec2 $\{spreadType\}\cf6 \strokec6 " using the "\cf0 \strokec2 $\{deckType\}\cf6 \strokec6 " deck tradition. \cf0 \cb1 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+\cf6 \cb4 \strokec6       Select \cf0 \strokec2 $\{cardCount\}\cf6 \strokec6  unique cards from the Major Arcana. Provide a deep interpretation for each card and its specific position in the spread, specifically reflecting the symbology of the \cf0 \strokec2 $\{deckType\}\cf6 \strokec6  tradition.\cf0 \cb1 \strokec2 \
+\cf6 \cb4 \strokec6       Finally, provide a holistic overall interpretation of the combined energies.`\cf0 \strokec2 ,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4       config: \{\cb1 \
+\cb4         responseMimeType: \cf6 \strokec6 "application/json"\cf0 \strokec2 ,\cb1 \
+\cb4         responseSchema: \{\cb1 \
+\cb4           \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 OBJECT\cf0 \strokec2 ,\cb1 \
+\cb4           properties: \{\cb1 \
+\cb4             cards: \{\cb1 \
+\cb4               \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 ARRAY\cf0 \strokec2 ,\cb1 \
+\cb4               items: \{\cb1 \
+\cb4                 \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 OBJECT\cf0 \strokec2 ,\cb1 \
+\cb4                 properties: \{\cb1 \
+\cb4                   name: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2  \},\cb1 \
+\cb4                   interpretation: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2  \},\cb1 \
+\cb4                   positionName: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "The name of the position (e.g., Past, Present, Future)"\cf0 \strokec2  \}\cb1 \
+\cb4                 \},\cb1 \
+\cb4                 required: [\cf6 \strokec6 "name"\cf0 \strokec2 , \cf6 \strokec6 "interpretation"\cf0 \strokec2 , \cf6 \strokec6 "positionName"\cf0 \strokec2 ]\cb1 \
+\cb4               \}\cb1 \
+\cb4             \},\cb1 \
+\cb4             overallInterpretation: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2  \}\cb1 \
+\cb4           \},\cb1 \
+\cb4           required: [\cf6 \strokec6 "cards"\cf0 \strokec2 , \cf6 \strokec6 "overallInterpretation"\cf0 \strokec2 ]\cb1 \
+\cb4         \}\cb1 \
+\cb4       \}\cb1 \
+\cb4     \});\cb1 \
+\
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  data = \cf5 \strokec5 JSON\cf0 \strokec2 .parse(response.text || \cf6 \strokec6 "\{\}"\cf0 \strokec2 );\cb1 \
+\cb4     \cf3 \strokec3 return\cf0 \strokec2  \{\cb1 \
+\cb4       cards: data.cards.map((c: \cf3 \strokec3 any\cf0 \strokec2 ) => (\{ ...c, isRevealed: \cf3 \strokec3 false\cf0 \strokec2  \})),\cb1 \
+\cb4       overallInterpretation: data.overallInterpretation,\cb1 \
+\cb4       deckType\cb1 \
+\cb4     \};\cb1 \
+\cb4   \} \cf3 \strokec3 catch\cf0 \strokec2  (error: \cf3 \strokec3 any\cf0 \strokec2 ) \{\cb1 \
+\cb4     console.error(\cf6 \strokec6 "Tarot reading error:"\cf0 \strokec2 , error);\cb1 \
+\cb4     \cf3 \strokec3 throw\cf0 \strokec2  \cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 Error\cf0 \strokec2 (\cf6 \strokec6 "The ethereal connection was lost. Please re-initiate the ritual."\cf0 \strokec2 );\cb1 \
+\cb4   \}\cb1 \
+\cb4 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 export\cf0 \strokec2  \cf3 \strokec3 const\cf0 \strokec2  generateSoulmateProfile = \cf3 \strokec3 async\cf0 \strokec2  (data: \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   dob: \cf3 \strokec3 string\cf0 \strokec2 ;\cb1 \
+\cb4   pob: \cf3 \strokec3 string\cf0 \strokec2 ;\cb1 \
+\cb4   tob: \cf3 \strokec3 string\cf0 \strokec2 ;\cb1 \
+\cb4   preference: \cf3 \strokec3 string\cf0 \strokec2 ;\cb1 \
+\cb4 \}): \cf5 \strokec5 Promise\cf0 \strokec2 <\cf5 \strokec5 SoulmateProfile\cf0 \strokec2 > => \{\cb1 \
+\cb4   \cf3 \strokec3 try\cf0 \strokec2  \{\cb1 \
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  textResponse = \cf3 \strokec3 await\cf0 \strokec2  ai.models.generateContent(\{\cb1 \
+\cb4       model: \cf5 \strokec5 TEXT_MODEL\cf0 \strokec2 ,\cb1 \
+\cb4       contents: \cf6 \strokec6 `Generate a highly detailed and mystical soulmate destiny profile in English. \cf0 \cb1 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+\cf6 \cb4 \strokec6       The user was born on \cf0 \strokec2 $\{data.dob\}\cf6 \strokec6  in \cf0 \strokec2 $\{data.pob\}\cf6 \strokec6  at \cf0 \strokec2 $\{data.tob\}\cf6 \strokec6 . They are looking for a \cf0 \strokec2 $\{data.preference\}\cf6 \strokec6 .\cf0 \cb1 \strokec2 \
+\cf6 \cb4 \strokec6       Use professional astrological and esoteric language.`\cf0 \strokec2 ,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4       config: \{\cb1 \
+\cb4         responseMimeType: \cf6 \strokec6 "application/json"\cf0 \strokec2 ,\cb1 \
+\cb4         responseSchema: \{\cb1 \
+\cb4           \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 OBJECT\cf0 \strokec2 ,\cb1 \
+\cb4           properties: \{\cb1 \
+\cb4             initials: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "Initials of the soulmate's name"\cf0 \strokec2  \},\cb1 \
+\cb4             zodiac: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "Astrological sign and traits"\cf0 \strokec2  \},\cb1 \
+\cb4             aura: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "Description of their aura and energy"\cf0 \strokec2  \},\cb1 \
+\cb4             personality: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "Deep personality traits"\cf0 \strokec2  \},\cb1 \
+\cb4             spiritualAlignment: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "Their spiritual connection and energy"\cf0 \strokec2  \},\cb1 \
+\cb4             spiritAnimal: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "Their spirit animal and what it reveals"\cf0 \strokec2  \},\cb1 \
+\cb4             career: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "Their profession and ambition"\cf0 \strokec2  \},\cb1 \
+\cb4             mission: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "Their life purpose and impact"\cf0 \strokec2  \},\cb1 \
+\cb4             timingLocation: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "When and where you will meet"\cf0 \strokec2  \},\cb1 \
+\cb4             meetingDetails: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "Small details of the first encounter"\cf0 \strokec2  \},\cb1 \
+\cb4             pastLife: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "Their connection to you in previous incarnations"\cf0 \strokec2  \},\cb1 \
+\cb4             tarotCompatibility: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "A tarot reading for your compatibility"\cf0 \strokec2  \},\cb1 \
+\cb4             spiritualSymbols: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "Signs from the universe to look for"\cf0 \strokec2  \},\cb1 \
+\cb4             conclusion: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "A final encouraging spiritual message"\cf0 \strokec2  \},\cb1 \
+\cb4             visualDescription: \{ \cf3 \strokec3 type\cf0 \strokec2 : \cf5 \strokec5 Type\cf0 \strokec2 .\cf5 \strokec5 STRING\cf0 \strokec2 , description: \cf6 \strokec6 "A short prompt for an image generator to draw this person's portrait"\cf0 \strokec2  \}\cb1 \
+\cb4           \},\cb1 \
+\cb4           required: [\cf6 \strokec6 "initials"\cf0 \strokec2 , \cf6 \strokec6 "zodiac"\cf0 \strokec2 , \cf6 \strokec6 "aura"\cf0 \strokec2 , \cf6 \strokec6 "personality"\cf0 \strokec2 , \cf6 \strokec6 "spiritualAlignment"\cf0 \strokec2 , \cf6 \strokec6 "spiritAnimal"\cf0 \strokec2 , \cf6 \strokec6 "career"\cf0 \strokec2 , \cf6 \strokec6 "mission"\cf0 \strokec2 , \cf6 \strokec6 "timingLocation"\cf0 \strokec2 , \cf6 \strokec6 "meetingDetails"\cf0 \strokec2 , \cf6 \strokec6 "pastLife"\cf0 \strokec2 , \cf6 \strokec6 "tarotCompatibility"\cf0 \strokec2 , \cf6 \strokec6 "spiritualSymbols"\cf0 \strokec2 , \cf6 \strokec6 "conclusion"\cf0 \strokec2 , \cf6 \strokec6 "visualDescription"\cf0 \strokec2 ]\cb1 \
+\cb4         \}\cb1 \
+\cb4       \}\cb1 \
+\cb4     \});\cb1 \
+\
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  profileData = \cf5 \strokec5 JSON\cf0 \strokec2 .parse(textResponse.text || \cf6 \strokec6 "\{\}"\cf0 \strokec2 );\cb1 \
+\
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  imageResponse = \cf3 \strokec3 await\cf0 \strokec2  ai.models.generateContent(\{\cb1 \
+\cb4       model: \cf5 \strokec5 IMAGE_MODEL\cf0 \strokec2 ,\cb1 \
+\cb4       contents: \cf6 \strokec6 `A hyper-realistic, ethereal charcoal and gold-leaf sketch of the soulmate: \cf0 \strokec2 $\{profileData.visualDescription\}\cf6 \strokec6 . High-end mystical portrait, cinematic lighting, celestial background.`\cf0 \strokec2 ,\cb1 \
+\cb4     \});\cb1 \
+\
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  portrait = extractImageFromResponse(imageResponse);\cb1 \
+\
+\cb4     \cf3 \strokec3 return\cf0 \strokec2  \{\cb1 \
+\cb4       ...profileData,\cb1 \
+\cb4       image: portrait\cb1 \
+\cb4     \};\cb1 \
+\cb4   \} \cf3 \strokec3 catch\cf0 \strokec2  (error: \cf3 \strokec3 any\cf0 \strokec2 ) \{\cb1 \
+\cb4     console.error(\cf6 \strokec6 "Soulmate generation error:"\cf0 \strokec2 , error);\cb1 \
+\cb4     \cf3 \strokec3 throw\cf0 \strokec2  \cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 Error\cf0 \strokec2 (error.message || \cf6 \strokec6 "The stars are currently clouded. Please try again later."\cf0 \strokec2 );\cb1 \
+\cb4   \}\cb1 \
+\cb4 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  extractImageFromResponse = (response: \cf3 \strokec3 any\cf0 \strokec2 ): \cf5 \strokec5 GeneratedImage\cf0 \strokec2  => \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   \cf3 \strokec3 const\cf0 \strokec2  parts = response?.candidates?.[\cf7 \strokec7 0\cf0 \strokec2 ]?.content?.parts || response?.content?.parts;\cb1 \
+\cb4   \cf3 \strokec3 if\cf0 \strokec2  (!parts) \cf3 \strokec3 throw\cf0 \strokec2  \cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 Error\cf0 \strokec2 (\cf6 \strokec6 "No content generated."\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 for\cf0 \strokec2  (\cf3 \strokec3 const\cf0 \strokec2  part \cf3 \strokec3 of\cf0 \strokec2  parts) \{\cb1 \
+\cb4     \cf3 \strokec3 if\cf0 \strokec2  (part.inlineData) \{\cb1 \
+\cb4       \cf3 \strokec3 return\cf0 \strokec2  \{\cb1 \
+\cb4         base64: part.inlineData.data,\cb1 \
+\cb4         mimeType: part.inlineData.mimeType || \cf6 \strokec6 'image/png'\cf0 \strokec2 ,\cb1 \
+\cb4         timestamp: \cf5 \strokec5 Date\cf0 \strokec2 .now()\cb1 \
+\cb4       \};\cb1 \
+\cb4     \}\cb1 \
+\cb4   \}\cb1 \
+\cb4   \cf3 \strokec3 throw\cf0 \strokec2  \cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 Error\cf0 \strokec2 (\cf6 \strokec6 "No image data found in response."\cf0 \strokec2 );\cb1 \
+\cb4 \};\cb1 \
+\
+}

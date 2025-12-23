@@ -1,0 +1,248 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2636
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;\f1\fnil\fcharset0 AppleColorEmoji;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red0\green0\blue255;\red255\green255\blue254;
+\red14\green110\blue109;\red144\green1\blue18;\red15\green112\blue1;\red19\green118\blue70;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;\cssrgb\c0\c0\c100000;\cssrgb\c100000\c100000\c99608;
+\cssrgb\c0\c50196\c50196;\cssrgb\c63922\c8235\c8235;\cssrgb\c0\c50196\c0;\cssrgb\c3529\c52549\c34510;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs24 \cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 import\cf0 \strokec2  \cf5 \strokec5 React\cf0 \strokec2 , \{ useEffect, useState, useRef \} \cf3 \strokec3 from\cf0 \strokec2  \cf6 \strokec6 'react'\cf0 \strokec2 ;\cb1 \
+\cf3 \cb4 \strokec3 import\cf0 \strokec2  \cf5 \strokec5 LoadingOracle\cf0 \strokec2  \cf3 \strokec3 from\cf0 \strokec2  \cf6 \strokec6 './LoadingOracle'\cf0 \strokec2 ;\cb1 \
+\
+\cf3 \cb4 \strokec3 interface\cf0 \strokec2  \cf5 \strokec5 LiveOracleSessionProps\cf0 \strokec2  \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   oracleName: \cf3 \strokec3 string\cf0 \strokec2 ;\cb1 \
+\cb4   onClose: () => \cf3 \strokec3 void\cf0 \strokec2 ;\cb1 \
+\cb4 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  \cf5 \strokec5 SIMLI_API_KEY\cf0 \strokec2  = \cf6 \strokec6 'guinlx7mymkflendoasbtg'\cf0 \strokec2 ;\cb1 \
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  \cf5 \strokec5 SIMLI_REST_API\cf0 \strokec2  = \cf6 \strokec6 'https://api.simli.ai/startAudioToVideoSession'\cf0 \strokec2 ;\cb1 \
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  \cf5 \strokec5 SIMLI_WS_API\cf0 \strokec2  = \cf6 \strokec6 'wss://api.simli.ai/startWebRTCSession'\cf0 \strokec2 ;\cb1 \
+\
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  \cf5 \strokec5 FACE_IDS\cf0 \strokec2 : \cf5 \strokec5 Record\cf0 \strokec2 <\cf3 \strokec3 string\cf0 \strokec2 , \cf3 \strokec3 string\cf0 \strokec2 > = \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   \cf6 \strokec6 'Michael'\cf0 \strokec2 : \cf6 \strokec6 'ae5658d5-cadd-4f9f-97a7-534e06f8c701'\cf0 \strokec2 ,\cb1 \
+\cb4   \cf6 \strokec6 'Elara'\cf0 \strokec2 : \cf6 \strokec6 '6de27680-7eb0-4f9c-8968-07612c155624'\cf0 \strokec2 ,\cb1 \
+\cb4   \cf6 \strokec6 'Josephine'\cf0 \strokec2 : \cf6 \strokec6 'a4952804-da9c-4dc0-89c0-881da0525a6f'\cf0 \cb1 \strokec2 \
+\cb4 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 const\cf0 \strokec2  \cf5 \strokec5 LiveOracleSession\cf0 \strokec2 : \cf5 \strokec5 React\cf0 \strokec2 .\cf5 \strokec5 FC\cf0 \strokec2 <\cf5 \strokec5 LiveOracleSessionProps\cf0 \strokec2 > = (\{ oracleName, onClose \}) => \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb4   \cf3 \strokec3 const\cf0 \strokec2  [isConnecting, setIsConnecting] = useState(\cf3 \strokec3 true\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [error, setError] = useState<\cf3 \strokec3 string\cf0 \strokec2  | \cf3 \strokec3 null\cf0 \strokec2 >(\cf3 \strokec3 null\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  [isMicEnabled, setIsMicEnabled] = useState(\cf3 \strokec3 true\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  videoRef = useRef<\cf5 \strokec5 HTMLVideoElement\cf0 \strokec2 >(\cf3 \strokec3 null\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  pcRef = useRef<\cf5 \strokec5 RTCPeerConnection\cf0 \strokec2  | \cf3 \strokec3 null\cf0 \strokec2 >(\cf3 \strokec3 null\cf0 \strokec2 );\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  localStreamRef = useRef<\cf5 \strokec5 MediaStream\cf0 \strokec2  | \cf3 \strokec3 null\cf0 \strokec2 >(\cf3 \strokec3 null\cf0 \strokec2 );\cb1 \
+\
+\cb4   useEffect(() => \{\cb1 \
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  startSimliSession = \cf3 \strokec3 async\cf0 \strokec2  () => \{\cb1 \
+\cb4       \cf3 \strokec3 try\cf0 \strokec2  \{\cb1 \
+\cb4         \cf3 \strokec3 const\cf0 \strokec2  faceId = \cf5 \strokec5 FACE_IDS\cf0 \strokec2 [oracleName];\cb1 \
+\cb4         \cf3 \strokec3 if\cf0 \strokec2  (!faceId) \{\cb1 \
+\cb4           setError(\cf6 \strokec6 `The Oracle \cf0 \strokec2 $\{oracleName\}\cf6 \strokec6  is currently beyond the veil.`\cf0 \strokec2 );\cb1 \
+\cb4           \cf3 \strokec3 return\cf0 \strokec2 ;\cb1 \
+\cb4         \}\cb1 \
+\
+\cb4         \cf7 \strokec7 // 1. Get User Media\cf0 \cb1 \strokec2 \
+\cb4         \cf3 \strokec3 const\cf0 \strokec2  stream = \cf3 \strokec3 await\cf0 \strokec2  navigator.mediaDevices.getUserMedia(\{ audio: \cf3 \strokec3 true\cf0 \strokec2 , video: \cf3 \strokec3 false\cf0 \strokec2  \});\cb1 \
+\cb4         localStreamRef.current = stream;\cb1 \
+\
+\cb4         \cf7 \strokec7 // 2. Start Session on Simli REST API\cf0 \cb1 \strokec2 \
+\cb4         \cf3 \strokec3 const\cf0 \strokec2  sessionResponse = \cf3 \strokec3 await\cf0 \strokec2  fetch(\cf5 \strokec5 SIMLI_REST_API\cf0 \strokec2 , \{\cb1 \
+\cb4           method: \cf6 \strokec6 'POST'\cf0 \strokec2 ,\cb1 \
+\cb4           headers: \{ \cf6 \strokec6 'Content-Type'\cf0 \strokec2 : \cf6 \strokec6 'application/json'\cf0 \strokec2  \},\cb1 \
+\cb4           body: \cf5 \strokec5 JSON\cf0 \strokec2 .stringify(\{\cb1 \
+\cb4             apiKey: \cf5 \strokec5 SIMLI_API_KEY\cf0 \strokec2 ,\cb1 \
+\cb4             faceId: faceId,\cb1 \
+\cb4             isInteractive: \cf3 \strokec3 true\cf0 \strokec2 ,\cb1 \
+\cb4             syncAudio: \cf3 \strokec3 true\cf0 \cb1 \strokec2 \
+\cb4           \})\cb1 \
+\cb4         \});\cb1 \
+\
+\cb4         \cf3 \strokec3 if\cf0 \strokec2  (!sessionResponse.ok) \{\cb1 \
+\cb4           \cf3 \strokec3 throw\cf0 \strokec2  \cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 Error\cf0 \strokec2 (\cf6 \strokec6 `Failed to initialize ritual with Simli (\cf0 \strokec2 $\{sessionResponse.status\}\cf6 \strokec6 )`\cf0 \strokec2 );\cb1 \
+\cb4         \}\cb1 \
+\
+\cb4         \cf3 \strokec3 const\cf0 \strokec2  sessionData = \cf3 \strokec3 await\cf0 \strokec2  sessionResponse.json();\cb1 \
+\cb4         \cf3 \strokec3 const\cf0 \strokec2  sessionToken = sessionData.session_token;\cb1 \
+\
+\cb4         \cf7 \strokec7 // 3. Establish WebRTC connection\cf0 \cb1 \strokec2 \
+\cb4         \cf7 \strokec7 // Note: Simli's specific implementation might require their SDK, \cf0 \cb1 \strokec2 \
+\cb4         \cf7 \strokec7 // but typically follow a standard WebRTC flow with a signaling socket.\cf0 \cb1 \strokec2 \
+\cb4         \cf7 \strokec7 // For this prototype, we'll implement the conceptual WebRTC connection steps.\cf0 \cb1 \strokec2 \
+\cb4         \cb1 \
+\cb4         \cf3 \strokec3 const\cf0 \strokec2  pc = \cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 RTCPeerConnection\cf0 \strokec2 (\{\cb1 \
+\cb4           iceServers: [\{ urls: \cf6 \strokec6 'stun:stun.l.google.com:19302'\cf0 \strokec2  \}]\cb1 \
+\cb4         \});\cb1 \
+\cb4         pcRef.current = pc;\cb1 \
+\
+\cb4         pc.ontrack = (event) => \{\cb1 \
+\cb4           \cf3 \strokec3 if\cf0 \strokec2  (videoRef.current && event.streams[\cf8 \strokec8 0\cf0 \strokec2 ]) \{\cb1 \
+\cb4             videoRef.current.srcObject = event.streams[\cf8 \strokec8 0\cf0 \strokec2 ];\cb1 \
+\cb4           \}\cb1 \
+\cb4         \};\cb1 \
+\
+\cb4         stream.getTracks().forEach(track => pc.addTrack(track, stream));\cb1 \
+\
+\cb4         \cf3 \strokec3 const\cf0 \strokec2  offer = \cf3 \strokec3 await\cf0 \strokec2  pc.createOffer();\cb1 \
+\cb4         \cf3 \strokec3 await\cf0 \strokec2  pc.setLocalDescription(offer);\cb1 \
+\
+\cb4         \cf7 \strokec7 // 4. Connect to Simli WebSocket for signaling\cf0 \cb1 \strokec2 \
+\cb4         \cf3 \strokec3 const\cf0 \strokec2  ws = \cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 WebSocket\cf0 \strokec2 (\cf6 \strokec6 `\cf0 \strokec2 $\{\cf5 \strokec5 SIMLI_WS_API\cf0 \strokec2 \}\cf6 \strokec6 ?token=\cf0 \strokec2 $\{sessionToken\}\cf6 \strokec6 `\cf0 \strokec2 );\cb1 \
+\cb4         \cb1 \
+\cb4         ws.onopen = () => \{\cb1 \
+\cb4           ws.send(\cf5 \strokec5 JSON\cf0 \strokec2 .stringify(\{ \cf3 \strokec3 type\cf0 \strokec2 : \cf6 \strokec6 'sdp-offer'\cf0 \strokec2 , sdp: offer.sdp \}));\cb1 \
+\cb4         \};\cb1 \
+\
+\cb4   ws.onmessage = \cf3 \strokec3 async\cf0 \strokec2  \cf3 \strokec3 function\cf0 \strokec2 (event) \{\cb1 \
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  message = event.data;\cb1 \
+\cb4   \cb1 \
+\cb4   \cf7 \strokec7 // Handle non-JSON messages first\cf0 \cb1 \strokec2 \
+\cb4   \cf3 \strokec3 if\cf0 \strokec2  (message === \cf6 \strokec6 "START"\cf0 \strokec2 ) \{\cb1 \
+\cb4     console.log(\cf6 \strokec6 "Simli session started"\cf0 \strokec2 );\cb1 \
+\cb4     setIsConnecting(\cf3 \strokec3 false\cf0 \strokec2 );\cb1 \
+\cb4     \cf3 \strokec3 return\cf0 \strokec2 ;\cb1 \
+\cb4   \}\cb1 \
+\cb4   \cf3 \strokec3 if\cf0 \strokec2  (message === \cf6 \strokec6 "STOP"\cf0 \strokec2  || message.startsWith(\cf6 \strokec6 "STOP"\cf0 \strokec2 )) \{\cb1 \
+\cb4     console.log(\cf6 \strokec6 "Simli session stopped"\cf0 \strokec2 );\cb1 \
+\cb4     \cf3 \strokec3 return\cf0 \strokec2 ;\cb1 \
+\cb4   \}\cb1 \
+\cb4   \cf3 \strokec3 if\cf0 \strokec2  (message.startsWith(\cf6 \strokec6 "ENDFRAME"\cf0 \strokec2 )) \{\cb1 \
+\cb4     \cf3 \strokec3 return\cf0 \strokec2 ;\cb1 \
+\cb4   \}\cb1 \
+\cb4   \cf3 \strokec3 if\cf0 \strokec2  (message === \cf6 \strokec6 "NO SESSION"\cf0 \strokec2  || message.startsWith(\cf6 \strokec6 "NO SESSION"\cf0 \strokec2 )) \{\cb1 \
+\cb4     console.error(\cf6 \strokec6 "No session available"\cf0 \strokec2 );\cb1 \
+\cb4     setError(\cf6 \strokec6 "Session expired. Please try again."\cf0 \strokec2 );\cb1 \
+\cb4     \cf3 \strokec3 return\cf0 \strokec2 ;\cb1 \
+\cb4   \}\cb1 \
+\cb4   \cb1 \
+\cb4   \cf7 \strokec7 // Try to parse JSON messages\cf0 \cb1 \strokec2 \
+\cb4   \cf3 \strokec3 try\cf0 \strokec2  \{\cb1 \
+\cb4     \cf3 \strokec3 const\cf0 \strokec2  msg = \cf5 \strokec5 JSON\cf0 \strokec2 .parse(message);\cb1 \
+\cb4     console.log(\cf6 \strokec6 "Received JSON:"\cf0 \strokec2 , msg);\cb1 \
+\cb4     \cb1 \
+\cb4     \cf3 \strokec3 if\cf0 \strokec2  (msg.\cf3 \strokec3 type\cf0 \strokec2  === \cf6 \strokec6 'sdp-answer'\cf0 \strokec2 ) \{\cb1 \
+\cb4       \cf3 \strokec3 await\cf0 \strokec2  pc.setRemoteDescription(\cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 RTCSessionDescription\cf0 \strokec2 (\{ \cf3 \strokec3 type\cf0 \strokec2 : \cf6 \strokec6 'answer'\cf0 \strokec2 , sdp: msg.sdp \}));\cb1 \
+\cb4       setIsConnecting(\cf3 \strokec3 false\cf0 \strokec2 );\cb1 \
+\cb4     \} \cf3 \strokec3 else\cf0 \strokec2  \cf3 \strokec3 if\cf0 \strokec2  (msg.\cf3 \strokec3 type\cf0 \strokec2  === \cf6 \strokec6 'ice-candidate'\cf0 \strokec2 ) \{\cb1 \
+\cb4       \cf3 \strokec3 await\cf0 \strokec2  pc.addIceCandidate(\cf3 \strokec3 new\cf0 \strokec2  \cf5 \strokec5 RTCIceCandidate\cf0 \strokec2 (msg.candidate));\cb1 \
+\cb4     \}\cb1 \
+\cb4   \} \cf3 \strokec3 catch\cf0 \strokec2  (e) \{\cb1 \
+\cb4     console.warn(\cf6 \strokec6 "Could not parse message:"\cf0 \strokec2 , message);\cb1 \
+\cb4   \}\cb1 \
+\cb4 \};\cb1 \
+\
+\cb4       \} \cf3 \strokec3 catch\cf0 \strokec2  (e: \cf3 \strokec3 any\cf0 \strokec2 ) \{\cb1 \
+\cb4         console.error(\cf6 \strokec6 "Simli connection error:"\cf0 \strokec2 , e);\cb1 \
+\cb4         setError(\cf6 \strokec6 `The spirits are silent: \cf0 \strokec2 $\{e.message\}\cf6 \strokec6 `\cf0 \strokec2 );\cb1 \
+\cb4       \}\cb1 \
+\cb4     \};\cb1 \
+\
+\cb4     startSimliSession();\cb1 \
+\
+\cb4     \cf3 \strokec3 return\cf0 \strokec2  () => \{\cb1 \
+\cb4       pcRef.current?.close();\cb1 \
+\cb4       localStreamRef.current?.getTracks().forEach(t => t.stop());\cb1 \
+\cb4     \};\cb1 \
+\cb4   \}, [oracleName]);\cb1 \
+\
+\cb4   \cf3 \strokec3 const\cf0 \strokec2  toggleMic = () => \{\cb1 \
+\cb4     \cf3 \strokec3 if\cf0 \strokec2  (localStreamRef.current) \{\cb1 \
+\cb4       \cf3 \strokec3 const\cf0 \strokec2  audioTrack = localStreamRef.current.getAudioTracks()[\cf8 \strokec8 0\cf0 \strokec2 ];\cb1 \
+\cb4       \cf3 \strokec3 if\cf0 \strokec2  (audioTrack) \{\cb1 \
+\cb4         audioTrack.enabled = !audioTrack.enabled;\cb1 \
+\cb4         setIsMicEnabled(audioTrack.enabled);\cb1 \
+\cb4       \}\cb1 \
+\cb4     \}\cb1 \
+\cb4   \};\cb1 \
+\
+\cb4   \cf3 \strokec3 return\cf0 \strokec2  (\cb1 \
+\cb4     <div className=\cf6 \strokec6 "fixed inset-0 z-[200] bg-midnight/98 backdrop-blur-3xl overflow-hidden flex items-center justify-center"\cf0 \strokec2 >\cb1 \
+\cb4       <div className=\cf6 \strokec6 "absolute inset-0 ritual-table opacity-20 pointer-events-none"\cf0 \strokec2 ></div>\cb1 \
+\cb4       \cb1 \
+\cb4       \{error ? (\cb1 \
+\cb4         <div className=\cf6 \strokec6 "text-center p-8 animate-fade-in relative z-20"\cf0 \strokec2 >\cb1 \
+\cb4           <p className=\cf6 \strokec6 "text-red-400 font-serif italic text-xl mb-8"\cf0 \strokec2 >\{error\}</p>\cb1 \
+\cb4           <button \cb1 \
+\cb4             onClick=\{onClose\}\cb1 \
+\cb4             className=\cf6 \strokec6 "px-12 py-4 bg-[#d4af37] text-midnight rounded-full text-xs font-black uppercase tracking-[0.4em] hover:scale-110 transition-transform"\cf0 \cb1 \strokec2 \
+\cb4           >\cb1 \
+\cb4             \cf5 \strokec5 Return\cf0 \strokec2  to \cf5 \strokec5 Temple\cf0 \cb1 \strokec2 \
+\cb4           </button>\cb1 \
+\cb4         </div>\cb1 \
+\cb4       ) : (\cb1 \
+\cb4         <div className=\cf6 \strokec6 "flex flex-col items-center justify-between h-full w-full p-8 md:p-12 text-center animate-fade-in relative z-20"\cf0 \strokec2 >\cb1 \
+\cb4           <div className=\cf6 \strokec6 "w-full flex justify-between items-center mb-8"\cf0 \strokec2 >\cb1 \
+\cb4             <div className=\cf6 \strokec6 "flex flex-col items-start"\cf0 \strokec2 >\cb1 \
+\cb4               <h2 className=\cf6 \strokec6 "text-3xl font-serif gold-text italic tracking-widest"\cf0 \strokec2 >\{oracleName\}</h2>\cb1 \
+\cb4               <span className=\cf6 \strokec6 "text-[10px] uppercase tracking-[0.4em] text-slate-400"\cf0 \strokec2 >\cf5 \strokec5 Divine\cf0 \strokec2  \cf5 \strokec5 Simli\cf0 \strokec2  \cf5 \strokec5 Avatar\cf0 \strokec2 </span>\cb1 \
+\cb4             </div>\cb1 \
+\cb4             <button \cb1 \
+\cb4               onClick=\{onClose\}\cb1 \
+\cb4               className=\cf6 \strokec6 "px-6 py-2 bg-red-900/30 border border-red-500 text-red-100 rounded-full text-[10px] font-black uppercase tracking-[0.4em] hover:bg-red-700/50 transition-all shadow-glow"\cf0 \cb1 \strokec2 \
+\cb4             >\cb1 \
+\cb4               \cf5 \strokec5 End\cf0 \strokec2  \cf5 \strokec5 Session\cf0 \cb1 \strokec2 \
+\cb4             </button>\cb1 \
+\cb4           </div>\cb1 \
+\
+\cb4           <div className=\cf6 \strokec6 "relative flex-1 w-full max-w-4xl flex items-center justify-center"\cf0 \strokec2 >\cb1 \
+\cb4             \{isConnecting && (\cb1 \
+\cb4               <div className=\cf6 \strokec6 "absolute inset-0 z-30 flex items-center justify-center"\cf0 \strokec2 >\cb1 \
+\cb4                  <\cf5 \strokec5 LoadingOracle\cf0 \strokec2  message=\{\cf6 \strokec6 `Invoking \cf0 \strokec2 $\{oracleName\}\cf6 \strokec6 's manifestation...`\cf0 \strokec2 \} />\cb1 \
+\cb4               </div>\cb1 \
+\cb4             )\}\cb1 \
+\cb4             \cb1 \
+\cb4             <div className=\cf6 \strokec6 "relative w-full aspect-video md:aspect-[16/9] rounded-[3rem] overflow-hidden border-4 border-[#d4af37]/40 shadow-[0_0_120px_rgba(212,175,55,0.25)] bg-black/60 backdrop-blur-md oracle-video-container"\cf0 \strokec2 >\cb1 \
+\cb4               <div className=\cf6 \strokec6 "absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40 pointer-events-none z-10"\cf0 \strokec2 ></div>\cb1 \
+\cb4               <video \cb1 \
+\cb4                 ref=\{videoRef\}\cb1 \
+\cb4                 autoPlay \cb1 \
+\cb4                 playsInline \cb1 \
+\cb4                 className=\cf6 \strokec6 "w-full h-full object-cover transition-opacity duration-1000"\cf0 \cb1 \strokec2 \
+\cb4                 style=\{\{ opacity: isConnecting ? \cf8 \strokec8 0\cf0 \strokec2  : \cf8 \strokec8 1\cf0 \strokec2  \}\}\cb1 \
+\cb4               />\cb1 \
+\cb4             </div>\cb1 \
+\cb4           </div>\cb1 \
+\
+\cb4           <div className=\cf6 \strokec6 "mt-12 flex flex-col items-center gap-6"\cf0 \strokec2 >\cb1 \
+\cb4             <p className=\cf6 \strokec6 "text-slate-200 font-serif italic text-sm md:text-lg tracking-widest max-w-xl opacity-80"\cf0 \strokec2 >\cb1 \
+\cb4               \cf6 \strokec6 "Whisper your questions to the stars. The Oracle shall answer in time."\cf0 \cb1 \strokec2 \
+\cb4             </p>\cb1 \
+\cb4             <div className=\cf6 \strokec6 "flex gap-8 items-center"\cf0 \strokec2 >\cb1 \
+\cb4                <button \cb1 \
+\cb4                 onClick=\{toggleMic\}\cb1 \
+\cb4                 className=\{\cf6 \strokec6 `w-20 h-20 rounded-full flex items-center justify-center border-2 transition-all duration-500 hover:scale-110 \cf0 \strokec2 $\{isMicEnabled ? \cf6 \strokec6 'bg-[#d4af37] border-transparent text-midnight shadow-[0_0_40px_rgba(212,175,55,0.5)]'\cf0 \strokec2  : \cf6 \strokec6 'bg-red-950/80 border-red-500 text-red-500 shadow-[0_0_30px_rgba(239,68,68,0.3)]'\cf0 \strokec2 \}\cf6 \strokec6 `\cf0 \strokec2 \}\cb1 \
+\cb4                >\cb1 \
+\cb4                  <span className=\cf6 \strokec6 "text-2xl"\cf0 \strokec2 >\{isMicEnabled ? \cf6 \strokec6 '
+\f1 \uc0\u55356 \u57241 \u65039 
+\f0 '\cf0 \strokec2  : \cf6 \strokec6 '
+\f1 \uc0\u55357 \u56583 
+\f0 '\cf0 \strokec2 \}</span>\cb1 \
+\cb4                </button>\cb1 \
+\cb4                <div className=\cf6 \strokec6 "flex flex-col items-start gap-1"\cf0 \strokec2 >\cb1 \
+\cb4                  <span className=\cf6 \strokec6 "text-[10px] gold-text uppercase tracking-widest font-black opacity-60"\cf0 \strokec2 >\cf5 \strokec5 Status\cf0 \strokec2 </span>\cb1 \
+\cb4                  <div className=\cf6 \strokec6 "flex items-center gap-2"\cf0 \strokec2 >\cb1 \
+\cb4                    <div className=\{\cf6 \strokec6 `w-2 h-2 rounded-full animate-pulse \cf0 \strokec2 $\{isConnecting ? \cf6 \strokec6 'bg-amber-500'\cf0 \strokec2  : \cf6 \strokec6 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]'\cf0 \strokec2 \}\cf6 \strokec6 `\cf0 \strokec2 \}></div>\cb1 \
+\cb4                    <span className=\cf6 \strokec6 "text-[11px] text-white/80 uppercase tracking-widest"\cf0 \strokec2 >\{isConnecting ? \cf6 \strokec6 'Aligning'\cf0 \strokec2  : \cf6 \strokec6 'Connected'\cf0 \strokec2 \}</span>\cb1 \
+\cb4                  </div>\cb1 \
+\cb4                </div>\cb1 \
+\cb4             </div>\cb1 \
+\cb4           </div>\cb1 \
+\cb4         </div>\cb1 \
+\cb4       )\}\cb1 \
+\cb4     </div>\cb1 \
+\cb4   );\cb1 \
+\cb4 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 export\cf0 \strokec2  \cf3 \strokec3 default\cf0 \strokec2  \cf5 \strokec5 LiveOracleSession\cf0 \strokec2 ;\cb1 \
+\
+}
